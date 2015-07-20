@@ -1,10 +1,10 @@
 var express, router, bodyParser, expressJwt, jwt, secret, bodyParserJson,
         db, success, token, attrs, user, config, env;
 
-express = require('../express');
+express = require('../../../node_modules/express');
 router = express.Router();
-bodyParser = require('../body-parser');
-expressJwt = require('../express-jwt');
+bodyParser = require('../../../node_modules/body-parser');
+expressJwt = require('../../../node_modules/express-jwt');
 jwt = require('jsonwebtoken');
 //db = require('../dbService');
 secret = "TheAnswerIs42";

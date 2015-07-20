@@ -6,8 +6,8 @@ env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 var config = require('./SERVER/config.js');
 console.log('Environment: ', env);
 
-express = require("./express");
-expressJwt = require('./express-jwt');
+express = require("./node_modules/express");
+expressJwt = require('./node_modules/express-jwt');
 
 app = express();
 secret = "TheAnswerIs42";
