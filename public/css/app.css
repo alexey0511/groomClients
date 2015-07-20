@@ -1,3 +1,7 @@
+.ng-cloak {
+   display: none !important;
+}
+
 #newClientForm {
     border-radius: 25px;
     border: 2px solid #8AC007;
