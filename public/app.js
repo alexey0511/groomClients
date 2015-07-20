@@ -7,9 +7,9 @@ angular.module('myApp', [
     'myApp.scanClient',
     'myApp.visits',
     'myApp.newclient',
-   'myApp.manageProducts',
+    'myApp.manageProducts',
     'myApp.manageUsers',
-    ,'myApp.manageClients',
+    , 'myApp.manageClients',
     'myApp.generateQR',
     'ngCookies',
     'myApp.report',
@@ -118,6 +118,25 @@ angular.module('myApp', [
                     }
                 } else {
                     console.log("Error while adding...");
+                }
+            };
+            $scope.decreaseCount = function (clientIndex) {
+                if ($scope.people[clientIndex].counters.progress > 0) {
+                    $http.post('/api/removeLatestPurchase', {client:$scope.people[clientIndex]})
+                            .success(function () {
+                                if ($scope.people[clientIndex].counters.freeVisits > 0
+                                        && $scope.people[clientIndex].counters.visits > 0) {
+                                    $scope.people[clientIndex].counters.freeVisits -= 1;
+                                }
+                                if ($scope.people[clientIndex].counters.progress > 0) {
+                                    $scope.people[clientIndex].counters.progress -= 1;
+                                }
+                                if ($scope.people[clientIndex].counters.visits > 0) {
+                                    $scope.people[clientIndex].counters.visits -= 1;
+                                }
+                                // Update record in DB
+                                $http.post('/api/clients', $scope.people[clientIndex]);
+                            });
                 }
             };
             $scope.redeemCoupon = function (clientIndex) {

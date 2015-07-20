@@ -95,18 +95,7 @@ angular.module('myApp.clients', ['ngRoute'])
                 $scope.verifyCountersNum(clientIndex);
                 var response = confirm("Do you want to remove haircut?");
                 if (response) {
-                    if ($scope.people[clientIndex].counters.freeVisits > 0
-                            && $scope.people[clientIndex].counters.visits > 0) {
-                        $scope.people[clientIndex].counters.freeVisits -= 1;
-                    }
-                    if ($scope.people[clientIndex].counters.progress > 0) {
-                        $scope.people[clientIndex].counters.progress -= 1;
-                    }
-                    if ($scope.people[clientIndex].counters.visits > 0) {
-                        $scope.people[clientIndex].counters.visits -= 1;
-                    }
-                    // Update record in DB
-                    $http.post('/api/clients', $scope.people[clientIndex]);
+                    $scope.decreaseCount(clientIndex);
                 }
             };
         })

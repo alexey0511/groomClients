@@ -19,7 +19,7 @@
                 <thead>
                     <tr>
                         <th>#</th><th>Name</th><th>Contact Phone</th><th>N Cuts</th><th>Last haircut</th>
-                        <th>Send notification</th><th>TXT sent</th><th>TXT Status</th>
+<!--                        <th>Send notification</th><th>TXT sent</th><th>TXT Status</th>-->
                     </tr>
                 </thead><tbody>
                     <tr ng-repeat="person in peopleDue">
@@ -28,12 +28,12 @@
                         <td >{{person.phone}}</td>
                         <td > {{person.haircuts}}</td>
                         <td > {{person.lastVisit|date:'dd/MM/yyyy'}}</td>
-                        <td ><div class='btn btn-primary' ng-click='sendTxt(person.id)'>Send txt</div></td>
+<!--                        <td ><div class='btn btn-primary' ng-click='sendTxt(person.id)'>Send txt</div></td>
                         <td> {{person.notification_sent}}</td>
                         <td>
                             <div class='btn btn-primary' ng-click='checkStatusTxt(person.id)'>Check status</div>
                             {{person.notification.msgStatus}}
-                        </td>
+                        </td>-->
                     </tr>
                 <tbody>
             </table>

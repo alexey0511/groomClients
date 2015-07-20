@@ -30,7 +30,7 @@
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
                         <li ng-if="currentUser.role === 'user'"><a href="#/newclient">New Client</a></li> 
-                        <li ng-if="currentUser.role === 'user'"><a href="#/clients">Clients</a></li>
+                        <li ng-show="currentUser.role === 'user'"><a href="#/clients">Clients</a></li>
                         <li ng-if="currentUser.role === 'user'"><a href="#/sell">Buy haircut</a></li>
                         <li ng-if="currentUser.role === 'user'"><a href="#/scanClient">Scan QR Code</a></li>
                         <li class="dropdown" ng-if="currentUser.role === 'user'">
@@ -38,12 +38,12 @@
                             <ul class="dropdown-menu" >
                                 <li ng-if="currentUser.role === 'user'"><a href="#/report">Report</a></li>
                                 <li ng-if="currentUser.role === 'user'"><a href="#/visits">Visits</a></li>
+                                <li ng-if="currentUser.role === 'user'"><a href="#/message">Txt messaging</a></li>
                             </ul>
                         </li>
                         <li class="dropdown" ng-if="currentUser.role === 'user'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li ng-if="currentUser.role === 'user'"><a href="#/message">Txt messaging</a></li>
                                 <li ng-if="currentUser.role === 'user'"><a href="#/generateQR">Generate QR</a></li>
                                 <li role="separator" class="divider"></li>
                                 <li ng-if="currentUser.role === 'user'"><a href="#/manageproducts">Manage Products</a></li>
