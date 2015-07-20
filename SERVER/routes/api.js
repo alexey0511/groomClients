@@ -3,9 +3,9 @@ var express, router, bodyParser, expressJwt, jwt, bodyParserJson,
 
 express = require('express');
 router = express.Router();
-bodyParser = require('node_modules/body-parser');
-expressJwt = require('node_modules/express-jwt');
-jwt = require('node_modules/jsonwebtoken');
+bodyParser = require('body-parser');
+expressJwt = require('express-jwt');
+jwt = require('jsonwebtoken');
 bodyParserJson = bodyParser.json();
 env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
