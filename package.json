@@ -1,7 +1,7 @@
 {
-  "name": "node-js-getting-started",
-  "version": "0.1.4",
-  "description": "A sample Node.js app using Express 4",
+  "name": "groomClients",
+  "version": "0.2.0",
+  "description": "client tracking system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -15,7 +15,9 @@
     "json": "~9.0.x"
   },
   "engines": {
-    "node": "0.12.2"
+    "node": "0.12.2",
+	"npm": "1.4.x"
+
   },
   "repository": {
     "type": "git",
