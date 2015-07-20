@@ -1,0 +1,21 @@
+<div>
+    <div>
+        <div>Number</div>
+        <label>Store ID: </label>
+        <input type="text" ng-model="storeId" />
+        <label>Start From: </label>
+        <input type="text" ng-model="startFrom" />
+
+        <div class="btn btn-primary" ng-click="generateCodes()">Generate</div>
+    </div>
+    <div id='qrCodes' style='page-break-before: always;'>
+        <hr>
+        <div ng-repeat="code in codes track by $index">
+            <div ng-show="code"class='center-block' style='width: 150px; height: 150px; float:left;padding: 20px;'>
+                <qr text="code" type-number="0" correction-level="L" input-mode="inputMode" image="image" size='100' ></qr>
+                <div class='text-center'><b>{{code}}</b></div>
+            </div>
+        </div>
+
+    </div>
+</div>
