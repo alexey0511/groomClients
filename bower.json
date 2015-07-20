@@ -1,0 +1,18 @@
+{
+  "name": "groomClients",
+  "description": "application to track clients",
+  "version": "0.0.2",
+  "homepage": "https://github.com/alexey0511/groomClients",
+  "license": "Copyright",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.4.x",
+    "angular-route": "~1.4.x",
+    "angular-cookies": "~1.4.x",
+    "angular-loader": "~1.4.x",
+    "angular-mocks": "~1.4.x",
+    "html5-boilerplate": "~5.2.x",
+    "angular-qr": "~0.0.x",
+    "angular-qrcode": "~5.1.x"
+  }
+}

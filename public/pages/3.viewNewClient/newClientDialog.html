@@ -1,0 +1,51 @@
+<div id='newClientForm'>
+    <form class="form-horizontal" ng-submit="addNewClient();newClientForm.$setPristine()" role="form" name='newClientForm'>
+        <h2>NEW CLIENT</h2>
+
+        <div class="form-group">
+            <label for="inputFirstName" class="col-sm-6 control-label">First Name</label>
+            <div class="col-sm-6">
+                <input capitalize-first name="firstName" class="form-control" id="inputFirstName" placeholder="First name" ng-model="newClient.firstName" required>
+            </div>
+            <div class="error" ng-show="newClientForm.firstName.$error.required && newClientForm.firstName.$dirty">
+                <span>Please enter a value</span>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label for="inputLastName" class="col-sm-6 control-label">Last Name</label>
+            <div class="col-sm-6">
+                <input capitalize-first class="form-control" id="inputLastName" placeholder="Last name" ng-model="newClient.lastName">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail" class="col-sm-6 control-label">Email</label>
+            <div class="col-sm-6">
+                <input class="form-control" id="inputEmail" placeholder="Email" ng-model="newClient.email">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPhone" class="col-sm-6 control-label">Mobile Phone</label>
+            <div class="col-sm-6">
+                <input name="phone" class="form-control" id="inputPhone" placeholder="Phone" ng-model="newClient.phone" ng-pattern="patterns.phone">
+            </div>
+            <div class="error" ng-hide="newClientForm.phone.$valid" ng-show="newClientForm.phone.$error && newClientForm.phone.$dirty">
+                <span>Phone number format: "64xxxxxxxxx"</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputPhone2" class="col-sm-6 control-label">Home Phone</label>
+            <div class="col-sm-6">
+                <input name="phone2" class="form-control" id="inputPhone2" placeholder="Phone" ng-model="newClient.phone2" >
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-offset-6 col-xs-6">
+                <button type="submit" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-plus-sign" ></i> Add</button>
+                <button ng-click="resetNewClientForm();newClientForm.$setPristine() " class="btn btn-danger">
+                   Reset</button>
+            </div>
+        </div>
+    </form>
+</div>
