@@ -19,7 +19,7 @@
         <link rel="stylesheet" href="css/app.css">
         <script src="components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
     </head>
-    <body ng-controller="ApplicationController">
+    <body ng-controller="ApplicationController" ng-cloak>
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
@@ -57,7 +57,7 @@
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <div style="float:right; margin: 20px" ng-if="currentUser">Hi, {{ currentUser.user}}
+                            <div style="float:right; margin: 20px" ng-if="currentUser" class="ng-cloak">Hi, {{ currentUser.user}}
                                 <a href="#/login" ng-click="logout()">Logout</a>
                             </div>
                         </li>
