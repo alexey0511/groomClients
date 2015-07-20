@@ -1,0 +1,42 @@
+
+<div>
+    <h2>Send txt notifications to the clients</h2>
+    <h4 style="background-color: yellow; padding: 5px; border: 2px solid red;">Under development, please use with care</h4>
+
+    <h3>Can be used to identify clients who didn't have haircut for long</h3>
+    <div class='row'>
+
+        <hr>
+        <div></div>
+        <h3> Due to visit: <b>{{totalDue()}} </b> people</h3> 
+        <br>
+        <h3>Showing people who came before : {{lastVisitDate|date:'dd/MM/yyyy'}}</h3>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col-md-7">
+            <table class="table table-striped" >
+                <thead>
+                    <tr>
+                        <th>#</th><th>Name</th><th>Contact Phone</th><th>N Cuts</th><th>Last haircut</th>
+<!--                        <th>Send notification</th><th>TXT sent</th><th>TXT Status</th>-->
+                    </tr>
+                </thead><tbody>
+                    <tr ng-repeat="person in peopleDue">
+                        <td>{{$index}}</td>
+                        <td >{{person.name}}</td>
+                        <td >{{person.phone}}</td>
+                        <td > {{person.haircuts}}</td>
+                        <td > {{person.lastVisit|date:'dd/MM/yyyy'}}</td>
+<!--                        <td ><div class='btn btn-primary' ng-click='sendTxt(person.id)'>Send txt</div></td>
+                        <td> {{person.notification_sent}}</td>
+                        <td>
+                            <div class='btn btn-primary' ng-click='checkStatusTxt(person.id)'>Check status</div>
+                            {{person.notification.msgStatus}}
+                        </td>-->
+                    </tr>
+                <tbody>
+            </table>
+        </div>
+    </div>
+</div>

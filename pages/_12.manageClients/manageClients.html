@@ -1,0 +1,24 @@
+
+
+<h1>Manage Clients</h1>
+<h3>Add, delete, change something about client</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <input type="text" ng-model="nameFilter" placeholder="Search..."/>                    
+        <table class="table table-striped" >
+            <thead>
+                <tr>
+                    <th>#</th><th>Name</th><th></th><th></th>
+                </tr>
+            </thead><tbody>
+                <tr ng-repeat="person in people| filter: nameFilter">
+                    <td>{{$index}}</td>
+                    <td >{{person.name}}</td>
+                    <td class=" btn btn-primary" ng-click="openClient(person.id)">Edit</td>
+                    <td class=" btn btn-danger" ng-click="removeClient(person.id)"><i class="glyphicon glyphicon-minus"></i> DELETE</td>
+                </tr>
+            <tbody>
+        </table>
+    </div>
+</div>
