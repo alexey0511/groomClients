@@ -1,6 +1,6 @@
-var express = require('../../../node_modules/express');
+var express = require('express');
 var router = express.Router();
-var bodyParser = require('../../../node_modules/body-parser');
+var bodyParser = require('body-parser');
 var parseUrlencoded = bodyParser.urlencoded({extended: false});
 bodyParserJson = bodyParser.json();
 
