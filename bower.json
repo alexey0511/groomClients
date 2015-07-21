@@ -13,6 +13,7 @@
     "angular-mocks": "~1.4.x",
     "html5-boilerplate": "~5.2.x",
     "angular-qr": "~0.0.x",
-    "angular-qrcode": "~5.1.x"
+    "angular-qrcode": "~5.1.x",
+    "angular-ui":"latest"
   }
 }

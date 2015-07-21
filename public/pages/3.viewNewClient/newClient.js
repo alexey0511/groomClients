@@ -27,6 +27,8 @@ angular.module('myApp.newclient', ['ngRoute'])
                 };
                 $scope.newClient.lastVisit = new Date();
                 $scope.newClient.createdOn = new Date();
+                $scope.newClient.visits = [];
+                $scope.newClient.points = 0;
                 // save to DB
                 console.log("NEW", $scope.newClient);
                 var visit = {

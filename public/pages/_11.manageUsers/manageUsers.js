@@ -30,10 +30,14 @@ angular.module('myApp.manageUsers', ['ngRoute'])
                 ;
             }
             $scope.removeUser = function (id) {
-                console.log("-- DELETE USER", id);
-                var userIndex = clientsService.findClientIndex(id, $scope.users);
-                var user = $scope.users.splice(userIndex, 1);
-                console.log(user[0]._id);
-                $http.post('/api/deleteUsers', user[0]);
+                commonFunctions.adminProof().then(function (response) {
+                    if (response) {
+                        console.log("-- DELETINT USER", id);
+                        var userIndex = clientsService.findClientIndex(id, $scope.users);
+                        var user = $scope.users.splice(userIndex, 1);
+                        console.log(user[0]._id);
+                        $http.post('/api/deleteUsers', {adminProof: response, user: user[0]});
+                    }
+                });
             };
         });

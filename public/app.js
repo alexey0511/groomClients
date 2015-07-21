@@ -19,7 +19,7 @@ angular.module('myApp', [
     'myApp.Authentication',
     'myApp.txting'
 ])
-        .controller('ApplicationController', function ($scope, AUTH_EVENTS, DEFAULT_SETTINGS, clientsService, $http, $q, Session, USER_ROLES, AuthService, $rootScope, $cookieStore, $location) {
+        .controller('ApplicationController', function ($scope, commonFunctions, AUTH_EVENTS, DEFAULT_SETTINGS, clientsService, $http, $q, Session, USER_ROLES, AuthService, $rootScope, $cookieStore, $location) {
             $scope.$on(AUTH_EVENTS.notAuthenticated, function () {
                 $scope.currentUser = null;
             });
@@ -99,9 +99,26 @@ angular.module('myApp', [
                 console.log(">>", visit);
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.people);
                 $scope.increaseCount(clientIndex);
+                $scope.people[clientIndex].points += visit.price * 100 / 1000;
+// redeem right away - use half price haircut
+                if ($scope.people[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
+                    $scope.people[clientIndex].counters.freeVisits += 1;
+                    // Invoking immediatelly for now. ToDo: implement invoke on button click;
+                    $scope.redeemCoupon(clientIndex);
+                    visit.price = Number(visit.price) * 100 / 2 / 100;
+                    $scope.people[clientIndex].points -= visit.price;
+                }
                 $http.post('/api/visits', visit)
                         .success(function () {
-                            $http.post('/api/clients', $scope.people[clientIndex]);
+                            var clientVisit = JSON.stringify(visit);
+                            $scope.people[clientIndex].visits.push(clientVisit);
+                            $http.post('/api/clients', $scope.people[clientIndex])
+                                    .success(function () {
+                                        console.log("clients saved");
+                                    })
+                                    .error(function (err) {
+                                        console.log("ERROR OCCURED", err);
+                                    });
                         });
             };
             $scope.increaseCount = function (clientIndex) {
@@ -111,18 +128,13 @@ angular.module('myApp', [
                     $scope.people[clientIndex].counters.progress += 1;
                     $scope.people[clientIndex].counters.visits += 1;
                     $scope.people[clientIndex].lastVisit = new Date();
-                    if ($scope.people[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
-                        $scope.people[clientIndex].counters.freeVisits += 1;
-                        // Invoking immediatelly for now. ToDo: implement invoke on button click;
-                        $scope.redeemCoupon(clientIndex);
-                    }
                 } else {
                     console.log("Error while adding...");
                 }
             };
             $scope.decreaseCount = function (clientIndex) {
                 if ($scope.people[clientIndex].counters.progress > 0) {
-                    $http.post('/api/removeLatestPurchase', {client:$scope.people[clientIndex]})
+                    $http.post('/api/removeLatestPurchase', {client: $scope.people[clientIndex]})
                             .success(function () {
                                 if ($scope.people[clientIndex].counters.freeVisits > 0
                                         && $scope.people[clientIndex].counters.visits > 0) {
@@ -229,9 +241,9 @@ angular.module('myApp', [
         .constant("DEFAULT_SETTINGS", {
             numberVisits: 6,
             winMessage: "HALF PRICE HAIR CUT",
-            defaultPrice: "35",
+            defaultPrice: "30",
             storeId: '123',
-            productExpiration: '0'
+            productExpiration: '42'
         })
         .constant('AUTH_EVENTS', {
             loginSuccess: 'auth-login-success',
@@ -243,7 +255,8 @@ angular.module('myApp', [
         })
         .constant('USER_ROLES', {
             all: '*',
-            user: 'user'
+            user: 'user',
+            admin: 'admin'
         })
         .factory('AuthService', function ($http, Session, $cookieStore) {
             var authService = {};
@@ -305,7 +318,7 @@ angular.module('myApp', [
                     templateUrl: 'pages/2.viewClients/clients.html',
                     controller: 'ClientsController',
                     data: {
-                        authorizedRoles: [USER_ROLES.user]
+                        authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -317,7 +330,7 @@ angular.module('myApp', [
                     templateUrl: 'pages/2.viewClients/client.html',
                     controller: 'SingleClientController',
                     data: {
-                        authorizedRoles: [USER_ROLES.user]
+                        authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -327,7 +340,7 @@ angular.module('myApp', [
                 });
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
-        .service('commonFunctions', function () {
+        .service('commonFunctions', function ($modal, $q) {
             return {
                 generateGuid: function guid() {
                     function s4() {
@@ -337,6 +350,36 @@ angular.module('myApp', [
                     }
                     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                             s4() + '-' + s4() + s4() + s4();
+                },
+                confirmDialog: function () {
+                    var defer = $q.defer();
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'pages/partials/ConfirmRemove.html',
+                        controller: 'ConfirmRemoveController',
+                        size: 'sm'
+                    });
+                    modalInstance.result.then(function (result) {
+                        defer.resolve(result);
+                    }, function () {
+                        defer.reject(false);
+                    });
+                    return defer.promise;
+                },
+                adminProof: function () {
+                    var defer = $q.defer();
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'pages/partials/adminProof.html',
+                        controller: 'adminProofController',
+                        size: 'sm'
+                    });
+                    modalInstance.result.then(function (result) {
+                        defer.resolve(result);
+                    }, function () {
+                        defer.reject(false);
+                    });
+                    return defer.promise;
                 }
             };
         })

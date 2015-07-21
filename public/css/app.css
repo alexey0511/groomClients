@@ -1,3 +1,9 @@
+#sellFormHideButton {
+    width: 200px;
+}
+#sellFormShowButton {
+    width: 200px;
+}
 .ng-cloak {
    display: none;
 }

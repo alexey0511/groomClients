@@ -8,9 +8,10 @@ angular.module('myApp.sell', ['ngRoute'])
                     controller: 'SellController'
                 });
             }])
-        .controller('SellController', function ($scope, $q, $http, cartService) {
+        .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions) {
             $scope.init = function () {
                 $scope.cart = {};
+                $scope.showNewClient = false;
                 $scope.getUsers()
                         .then(function () {
                             $scope.getClients()
@@ -73,8 +74,31 @@ angular.module('myApp.sell', ['ngRoute'])
                 $scope.cart.price = total;
                 return total;
             }
-            $scope.addClient = function (person) {
-                $scope.cart.client = person;
+            $scope.addClient = function (person, newClient) {
+                if (newClient === true) {
+                    person = {
+                        "firstName": person.firstName,
+                        "lastName": person.lastName,
+                        "id": commonFunctions.generateGuid(),
+                        "name": person.firstName + " " + person.lastName,
+                        "counters": {
+                            "progress": 0,
+                            "visits": 0,
+                            "freeVisits": 0
+                        },
+                        visits:[],
+                        points:0,
+                        "createdOn": new Date(),
+                        "new": true
+                    };
+                    $http.post("/api/clients", person)
+                            .success(function (clientRecord) {
+                                $scope.people.push(clientRecord);
+                                $scope.cart.client = person;
+                            });
+                } else {
+                    $scope.cart.client = person;
+                }
             }
             $scope.saveSale = function () {
                 if (!$scope.cart.client) {

@@ -1,5 +1,5 @@
 'use strict';
-angular.module('myApp.clients', ['ngRoute'])
+angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs','ui.bootstrap'])
         .constant("DEFAULT_SETTINGS", {
             numberVisits: 6,
             winMessage: "HALF PRICE HAIR CUT",
@@ -32,8 +32,6 @@ angular.module('myApp.clients', ['ngRoute'])
                     $scope.client.counters.visits = Number($scope.client.counters.visits);
                     $scope.client.counters.progress = Number($scope.client.counters.progress);
                     $scope.client.counters.freeVisits = Number($scope.client.counters.freeVisits);
-
-
                     // display QR code
                     if ($scope.client.qrcode) {
                         $scope.qrClient = $scope.client.qrcode.toString();
@@ -58,10 +56,9 @@ angular.module('myApp.clients', ['ngRoute'])
                         });
             };
         })
-        .controller('ClientsController', function ($scope, AUTH_EVENTS, $rootScope, $http, clientsService, $location, DEFAULT_SETTINGS) {
+        .controller('ClientsController', function ($scope, $modal, commonFunctions,$rootScope, $http, clientsService, $location, DEFAULT_SETTINGS) {
 
             $scope.isLoginPage = false;
-
             $http.get('/api/getClients')
                     .success(function (response) {
                         $scope.setPeopleList(response);
@@ -93,12 +90,14 @@ angular.module('myApp.clients', ['ngRoute'])
             $scope.removeHairCut = function (id) {
                 var clientIndex = clientsService.findClientIndex(id, $scope.people);
                 $scope.verifyCountersNum(clientIndex);
-                var response = confirm("Do you want to remove haircut?");
-                if (response) {
-                    $scope.decreaseCount(clientIndex);
-                }
+                commonFunctions.confirmDialog().then(function (response) {
+                    if (response) {
+                        $scope.decreaseCount(clientIndex);
+                    }
+                });
             };
         })
+
         /*
          * Filter used for pagination.
          * Defines from what number start in the list
@@ -113,3 +112,5 @@ angular.module('myApp.clients', ['ngRoute'])
                 }
             };
         })
+
+

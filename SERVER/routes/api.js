@@ -122,11 +122,15 @@ router.route('/users')
         });
 router.route('/deleteUsers')
         .post(bodyParserJson, function (req, res) {
-            // get user from JWT and give readable value to the user             var success = function (data) {
-            data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
-            console.log('delete', req.body);
-            db.deleteRecord("users", req.body._id.$oid, success);
-        })
+            db.findRecord("users", {username: req.user.username}, function (user) {
+                if (user[0].password === req.body.adminProof) {
+                    var success = function (data) {
+                        data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
+                    };
+                    db.deleteRecord("users", req.body.user._id.$oid, success);
+                }
+            });
+        });
 // VISITS
 router.route('/getVisits')
         .get(function (req, res) {

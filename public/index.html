@@ -29,29 +29,29 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
-                        <li ng-if="currentUser.role === 'user'"><a href="#/newclient">New Client</a></li> 
-                        <li ng-show="currentUser.role === 'user'"><a href="#/clients">Clients</a></li>
-                        <li ng-if="currentUser.role === 'user'"><a href="#/sell">Buy haircut</a></li>
-                        <li ng-if="currentUser.role === 'user'"><a href="#/scanClient">Scan QR Code</a></li>
-                        <li class="dropdown" ng-if="currentUser.role === 'user'">
+                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/newclient">New Client</a></li> 
+                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/clients">Clients</a></li>
+                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/sell">Buy haircut</a></li>
+                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/scanClient">Scan QR Code</a></li>
+                        <li class="dropdown" ng-if="currentUser.role === 'admin'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >
-                                <li ng-if="currentUser.role === 'user'"><a href="#/report">Report</a></li>
-                                <li ng-if="currentUser.role === 'user'"><a href="#/visits">Visits</a></li>
-                                <li ng-if="currentUser.role === 'user'"><a href="#/message">Txt messaging</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/report">Report</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/visits">Visits</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/message">Txt messaging</a></li>
                             </ul>
                         </li>
-                        <li class="dropdown" ng-if="currentUser.role === 'user'">
+                        <li class="dropdown" ng-if="currentUser.role === 'admin'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li ng-if="currentUser.role === 'user'"><a href="#/generateQR">Generate QR</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/generateQR">Generate QR</a></li>
                                 <li role="separator" class="divider"></li>
-                                <li ng-if="currentUser.role === 'user'"><a href="#/manageproducts">Manage Products</a></li>
-                                <li ng-if="currentUser.role === 'user'"><a href="#/manageusers">Manage Users</a></li>
-                                <li ng-if="currentUser.role == 'user'"><a href="#/manageClients">Manage Clients</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/manageproducts">Manage Products</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/manageusers">Manage Users</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/manageClients">Manage Clients</a></li>
                                 <li role="separator" class="divider"></li>
-<!--                                In NEXT Version-->
-<!--                                <li ng-if="currentUser.role === 'user'"><a href="#/settings">Settings</a></li>-->
+                                <!--                                In NEXT Version-->
+                                <!--                                <li ng-if="currentUser.role === 'user'"><a href="#/settings">Settings</a></li>-->
                             </ul>
                         </li>
                     </ul>
@@ -105,6 +105,7 @@
         <script src="pages/_10.manageProducts/manageProducts.js"></script>
         <script src="pages/_11.manageUsers/manageUsers.js"></script>
         <script src="pages/_12.manageClients/manageClients.js"></script>
+        <script src="pages/partials/dialogsModule.js"></script>
 
         <script src="components/version/version.js"></script>
         <script src="components/version/version-directive.js"></script>
