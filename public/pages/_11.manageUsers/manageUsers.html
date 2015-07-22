@@ -25,7 +25,10 @@
                     <td><input type="text" ng-model="newUser.username">
                     </td>
                     <td><input type="text" ng-model="newUser.password"></td>
-                    <td><input type="text" ng-model="newUser.role"></td>
+                    <td><select ng-model="newUser.role">
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select></td>
                     <td>
                         <div class="btn btn-primary" ng-click="addUser()">Add User</div>
                     </td>

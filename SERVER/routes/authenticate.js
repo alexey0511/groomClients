@@ -20,7 +20,6 @@ router.route('/')
             res.send("Please submit credentials via POST request");
         })
         .post(bodyParserJson, function (req, res) {
-            console.log("LOCAL", res);
             //TODO validate req.body.username and req.body.password
             success = function (result) {
                 // We are sending the profile inside the token
