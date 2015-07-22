@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.newclient', ['ngRoute','myApp.constants'])
+angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES',function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/newclient', {
                     templateUrl: 'pages/3.viewNewClient/newclient.html',
                     controller: 'NewClientController',
@@ -47,10 +47,10 @@ angular.module('myApp.newclient', ['ngRoute','myApp.constants'])
                 };
                 $http.post("/api/clients", $scope.newClient)
                         .success(function (clientRecord) {
-                            $scope.people.push(clientRecord);
+                            $scope.clientList.push(clientRecord);
                             $scope.recordVisit(visit);
                             $scope.resetNewClientForm();
-                            alert("Thank you for visiting Groom Barbers")
+                            commonFunctions.customAlert("Thank you for visiting Groom Barbers")
 
                         });
             };

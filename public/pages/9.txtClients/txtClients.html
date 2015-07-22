@@ -8,9 +8,9 @@
     <div class='row'>
         <hr>
         <div></div>
-        <h3> Due to visit: <b>{{totalDue()}} </b> people</h3> 
+        <h3> Due to visit: <b>{{totalDue()}} </b> clientList</h3> 
         <br>
-        <h3>Showing people who came before : {{lastVisitDate|date:'dd/MM/yyyy'}}</h3>
+        <h3>Showing clientList who came before : {{lastVisitDate|date:'dd/MM/yyyy'}}</h3>
         <hr>
     </div>
     <div class="row">
@@ -22,7 +22,7 @@
                         <!--                        <th>Send notification</th><th>TXT sent</th><th>TXT Status</th>-->
                     </tr>
                 </thead><tbody>
-                    <tr ng-repeat="person in peopleDue">
+                    <tr ng-repeat="person in clientListDue">
                         <td>{{$index}}</td>
                         <td >{{person.name}}</td>
                         <td >{{person.phone}}</td>

@@ -30,23 +30,23 @@ angular.module('myApp.txting', ['ngRoute','myApp.constants'])
                         });
             };
             $scope.totalDue = function () {
-                $scope.peopleDue = [];
-                for (var i = 0, l = $scope.people.length; i < l; i++) {
-                    if (new Date($scope.people[i].lastVisit) < lastVisitDateTemp) {
-                        $scope.peopleDue.push($scope.people[i]);
+                $scope.clientListDue = [];
+                for (var i = 0, l = $scope.clientList.length; i < l; i++) {
+                    if (new Date($scope.clientList[i].lastVisit) < lastVisitDateTemp) {
+                        $scope.clientListDue.push($scope.clientList[i]);
                     }
                 }
-                return $scope.peopleDue.length;
+                return $scope.clientListDue.length;
             };
             $scope.checkStatusTxt = function (id) {
-                clientIndex = clientsService.findClientIndex(id, $scope.people);
+                clientIndex = clientsService.findClientIndex(id, $scope.clientList);
                 if ((clientIndex || clientIndex === 0)
-                        && $scope.people[clientIndex].notification
-                        && $scope.people[clientIndex].notification.msgId
+                        && $scope.clientList[clientIndex].notification
+                        && $scope.clientList[clientIndex].notification.msgId
                         ) {
-                    msgService.queryTxtHttp($scope.people[clientIndex].notification.msgId)
+                    msgService.queryTxtHttp($scope.clientList[clientIndex].notification.msgId)
                             .then(function (status) {
-                                $scope.people[clientIndex].notification.msgStatus = status;
+                                $scope.clientList[clientIndex].notification.msgStatus = status;
                             },
                                     function (er) {
                                         $scope.alerts.push({type: 'danger', msg: "Cannot execute your request"});
@@ -57,13 +57,13 @@ angular.module('myApp.txting', ['ngRoute','myApp.constants'])
             };
 
             $scope.sendTxt = function (id) {
-                clientIndex = clientsService.findClientIndex(id, $scope.people);
+                clientIndex = clientsService.findClientIndex(id, $scope.clientList);
                 if (clientIndex || clientIndex === 0) {
-                    msgService.sendTxtRest($scope.people[clientIndex])
+                    msgService.sendTxtRest($scope.clientList[clientIndex])
                             .then(function (msgId) {
-                                $scope.people[clientIndex].notification_sent = 'yes';
-                                $scope.people[clientIndex].notification = {msgId: msgId};
-                                $http.post('/api/clients/' + $scope.people[clientIndex].id, $scope.people[clientIndex])
+                                $scope.clientList[clientIndex].notification_sent = 'yes';
+                                $scope.clientList[clientIndex].notification = {msgId: msgId};
+                                $http.post('/api/clients/' + $scope.clientList[clientIndex].id, $scope.clientList[clientIndex])
                                         .success(function (r) {
                                             $scope.alerts.push({type: 'success', msg: "Message has been sent"});
                                         });

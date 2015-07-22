@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.scanClient', ['ngRoute','myApp.constants'])
+angular.module('myApp.scanClient', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/scanClient', {
                     templateUrl: 'pages/7.scanClient/scanClient.html',
                     controller: 'ScanClientController',
@@ -27,6 +27,7 @@ angular.module('myApp.scanClient', ['ngRoute','myApp.constants'])
                         });
                 $scope.scanQRAgain();
 
+
             };
             $scope.scanQRAgain = function () {
                 $scope.scanning = true;
@@ -42,26 +43,30 @@ angular.module('myApp.scanClient', ['ngRoute','myApp.constants'])
                 );
             };
             $scope.addVisitViaQR = function (qrcode) {
-                var client = clientsService.getClientByQrCode(qrcode, $scope.people);
+                var client = clientsService.findClientByQrCode(qrcode, $scope.clientList);
                 if (client) {
-                    var visit = {};
-                    visit = {
-                        barber: $scope.currentUser.user,
-                        client: client,
-                        price: DEFAULT_SETTINGS.defaultPrice,
-                        date: new Date(),
-                        new : false
-                    };
-                    $scope.recordVisit(visit);
-                    commonFunctions.customAlert("Thank you for visiting Groom Barbers ");
-                    $scope.scanning = false;
+                    if (clientsService.lastVisitInAnHour(client)) {
+                        commonFunctions.customAlert("You've already had a haircut today");
+                    } else {
+                        var visit = {};
+                        visit = {
+                            barber: $scope.currentUser.user,
+                            client: client,
+                            price: DEFAULT_SETTINGS.defaultPrice,
+                            date: new Date(),
+                            new : false
+                        };
+                        $scope.recordVisit(visit);
+                        commonFunctions.customAlert("Thank you for visiting Groom Barbers ");
+                        $scope.scanning = false;
+                    }
                 } else {
                     $scope.alerts.push({type: 'danger', msg: "No contact found"});
                     $scope.stopScan();
                 }
             };
             $scope.stopScan = function () {
-                $.fn.html5_qrcode_stop();
+//                $.fn.html5_qrcode_stop();
                 $scope.scanning = false;
             };
             ;

@@ -31,10 +31,10 @@ angular.module('myApp.manageClients', ['ngRoute','myApp.constants'])
             $scope.removeClient = function (id) {
                 commonFunctions.adminProof().then(function (response) {
                     if (response) {
-                        var clientIndex = clientsService.findClientIndex(id, $scope.people);
-                        $http.post('/api/deleteClients', {adminProof: response, client: $scope.people[clientIndex]})
+                        var clientIndex = clientsService.findClientIndex(id, $scope.clientList);
+                        $http.post('/api/deleteClients', {adminProof: response, client: $scope.clientList[clientIndex]})
                                 .success(function () {
-                                    $scope.people.splice(clientIndex, 1);
+                                    $scope.clientList.splice(clientIndex, 1);
                                 })
                                 .error(function (err, status) {
                                     if (status === 403) {
@@ -48,9 +48,9 @@ angular.module('myApp.manageClients', ['ngRoute','myApp.constants'])
             };
             $scope.openClient = function (id) {
                 var clientIndex;
-                clientIndex = clientsService.findClientIndex(id, $scope.people);
+                clientIndex = clientsService.findClientIndex(id, $scope.clientList);
                 if (clientIndex || clientIndex === 0) {
-                    var id = $scope.people[clientIndex].id;
+                    var id = $scope.clientList[clientIndex].id;
                     $location.path("/clients/" + id);
                 }
             };

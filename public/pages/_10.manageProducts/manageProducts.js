@@ -20,10 +20,7 @@ angular.module('myApp.manageProducts', ['ngRoute','myApp.constants'])
                 $scope.checkProducts().then(null, function () {
                     $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load product list"});
                 });
-                $scope.alerts = [];
-                $scope.closeAlert = function (index) {
-                    $scope.alerts.splice(index, 1);
-                };
+
             };
             $scope.addProduct = function () {
                 if ($scope.newProduct && $scope.newProduct.name && $scope.newProduct.price) {

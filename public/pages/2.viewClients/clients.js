@@ -1,5 +1,5 @@
 'use strict';
-angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap','myApp.constants'])
+angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'myApp.constants'])
         .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/clients', {
                     templateUrl: 'pages/2.viewClients/clients.html',
@@ -74,8 +74,8 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap','myA
             };
 // BOF PAGINATION 
             $scope.numberOfPages = function () {
-                if (typeof $rootScope.people !== "undefined") {
-                    return Math.ceil($rootScope.people.length / $scope.pageSize);
+                if (typeof $rootScope.clientList !== "undefined") {
+                    return Math.ceil($rootScope.clientList.length / $scope.pageSize);
                 }
             };
 // EOF PAGINATION 
@@ -83,19 +83,25 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap','myA
                 $location.path("/clients/" + id);
             };
             $scope.addHairCut = function (id) {
-                var clientIndex = clientsService.findClientIndex(id, $scope.people);
-                var visit = {};
-                visit = {
-                    barber: $scope.currentUser.user,
-                    client: $scope.people[clientIndex],
-                    price: DEFAULT_SETTINGS.defaultPrice,
-                    date: new Date()
-                };
-                visit.new = $scope.people[clientIndex].new;
-                $scope.recordVisit(visit);
+                var clientIndex = clientsService.findClientIndex(id, $scope.clientList);
+                if (!clientsService.lastVisitInAnHour($scope.clientList[clientIndex]) ||
+                        confirm("It is a second in an hour, procceed?")) {
+
+                    var visit = {};
+                    visit = {
+                        barber: $scope.currentUser.user,
+                        client: $scope.clientList[clientIndex],
+                        price: DEFAULT_SETTINGS.defaultPrice,
+                        date: new Date()
+                    };
+                    visit.new = $scope.clientList[clientIndex].new;
+                    $scope.recordVisit(visit);
+                } else {
+                    commonFunctions.customAlert("Nothing happened");
+                }
             };
             $scope.removeHairCut = function (id) {
-                var clientIndex = clientsService.findClientIndex(id, $scope.people);
+                var clientIndex = clientsService.findClientIndex(id, $scope.clientList);
                 $scope.verifyCountersNum(clientIndex);
                 commonFunctions.confirmDialog().then(function (response) {
                     if (response) {
