@@ -19,7 +19,7 @@
         <link rel="stylesheet" href="css/app.css">
         <script src="components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
     </head>
-    <body ng-controller="ApplicationController" ng-cloak>
+    <body ng-controller="ApplicationController" class="ng-cloak">
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
@@ -28,7 +28,7 @@
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav" ng-show="currentUser">
+                    <ul class="nav navbar-nav" ng-show="currentUser" ng-cloak>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/newclient">New Client</a></li> 
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/clients">Clients</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/sell">Sales</a></li>
