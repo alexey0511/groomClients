@@ -7,6 +7,12 @@ angular.module('myApp.dialogs', ['ngRoute', 'ui.bootstrap'])
                 $modalInstance.dismiss(false);
             };
         })
+        .controller("customAlertController", function ($scope, $modalInstance, alert) {
+           $scope.alert = alert;
+            $scope.ok = function () {
+                $modalInstance.close(true);
+            };
+        })
         .controller("adminProofController", function ($scope, $modalInstance) {
             $scope.password;
             $scope.ok = function () {

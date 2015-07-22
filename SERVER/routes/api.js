@@ -48,20 +48,26 @@ router.route('/clients/:id')
         });
 router.route('/deleteClients')
         .post(bodyParserJson, function (req, res) {
-            var success = function (data) {
-                data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
-            };
-            console.log(req.body);
-            db.deleteRecord("clients", req.body._id.$oid, success);
+            db.findRecord("users", {username: req.user.username}, function (user) {
+                if (user[0].password === req.body.adminProof) {
+                    var success = function (data) {
+                        data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
+                    };
+                    console.log(req.body);
+                    db.deleteRecord("clients", req.body.client._id.$oid, success);
+                } else {
+                    res.status(403).send(false);
+                }
+            });
+
         });
-router.route('/getProducts')
+router.route('/products')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
             db.getAll("products", function (result) {
                 res.json(result);
             });
-        });
-router.route('/products')
+        })
         .post(bodyParserJson, function (req, res) {
             // get user from JWT and give readable value to the user
             var success = function (data) {
@@ -69,6 +75,7 @@ router.route('/products')
             };
             db.create("/products", req.body, success);
         });
+
 router.route('/deleteProducts')
         .post(bodyParserJson, function (req, res) {
             // get user from JWT and give readable value to the user
@@ -89,21 +96,9 @@ router.route('/getUserList')
                 res.json(users);
             });
         });
-router.route('/getUsers')
-        .get(function (req, res) {
-            // get user from JWT and give readable value to the user
-            db.getAll("users", function (result) {
-                var users = [];
-                for (var i = 0, l = result.length; i < l; i++) {
-                    users.push({username: result[i].username,
-                        password: '*******', role: result[i].role, _id: result[i]._id, id: result[i].id});
-                }
-                res.json(users);
-            });
-        });
 router.route('/users')
         .get(function (req, res) {
-// get user from JWT and give readable value to the user
+            // get user from JWT and give readable value to the user
             db.getAll("users", function (result) {
                 var users = [];
                 for (var i = 0, l = result.length; i < l; i++) {
@@ -116,7 +111,7 @@ router.route('/users')
         .post(bodyParserJson, function (req, res) {
             // get user from JWT and give readable value to the user
             var success = function (data) {
-                data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
+                data ? res.json(data) : res.status(400).json({message: "Failed to create a record"});
             };
             db.create("/users", req.body, success);
         });
@@ -128,6 +123,8 @@ router.route('/deleteUsers')
                         data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
                     };
                     db.deleteRecord("users", req.body.user._id.$oid, success);
+                } else {
+                    res.status(403).send(false);
                 }
             });
         });

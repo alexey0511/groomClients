@@ -1,4 +1,7 @@
-<div><h1>SHOPPING CART</h1>
+<div>
+    <div><h1>SHOPPING CART</h1>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+    </div>
     <div id="shoppingCartPanel">
         <div class="row">
             <div class="col-sm-4">
@@ -37,7 +40,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr ng-hide="showNewClient" ng-repeat="person in people| limitTo:5 |filter:nameFilter track by $index" >
+                        <tr ng-hide="showNewClient" ng-repeat="person in clientList| limitTo:5 |filter:nameFilter track by $index" >
                             <td>{{$index + 1}}</td>
                             <td ng-click="addClient(person)"> {{person.firstName}} {{person.lastName}}</td>
                         </tr>
@@ -56,25 +59,34 @@
             </div>
             <div class="col-sm-5" id="shoppingCart">
                 <div class="barber">Barber: 
-                    <select ng-model="cart.barber" ng-options="user as user for user in users">
+                    <select ng-model="cart.barber" ng-options="user.username as user.username for user in users">
                         <option value="">---select barber----</option>
                     </select> 
                 </div>
                 <div class="customerName">
                     Customer: <span>{{cart.client.name}}</span>
                 </div>
-                <div class="alert alert-warning" ng-show="cartData.length == 0">
+                <div class="alert alert-warning" ng-show="cartProducts.length == 0 && cartServices.length == 0">
                     There are no products selected.
                 </div>
-                <div ng-hide="cartData.length == 0">
+                <div ng-hide="cartProducts.length == 0 && cartServices.length == 0">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>#</th><th>Name</th><th>Quantity</th><th>Price</th><th>SubTotal</th>
+                                <th>#</th><th>Name</th><th>Quantity</th><th>Price</th><th>SubTotal</th><th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="item in cartData">
+                            <tr ng-repeat="service in cartServices">
+                                <td>{{$index}}</td>
+                                <td>{{service.name}}</td>
+                                <td>{{service.qty}}</td>
+                                <td>{{service.price}}</td>
+                                <td>{{service.price * service.qty}}</td>
+                                <td><button ng-click="remove(service.id)"
+                                            class="btn btn-sm btn-warning">Remove</button></td>
+                            </tr>
+                            <tr ng-repeat="item in cartProducts">
                                 <td>{{$index}}</td>
                                 <td>{{item.name}}</td>
                                 <td>{{item.qty}}</td>
@@ -89,10 +101,17 @@
                                 <td colspan="3" class="text-right">Total:</td>
                                 <td class="text-right">
                                     {{total() | currency}}
-                                </td>
+                                </td><td></td><td></td>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+                <div class="payment">
+                    <label>Payment: </label>
+                    <select ng-model="cart.payment">
+                        <option value="eftpos">Eftpos</option>
+                        <option value="cash">Cash</option>
+                    </select>
                 </div>
                 <div>
                     <button ng-click="saveSale()" id="saveSaleButton"

@@ -1,10 +1,10 @@
-
-
-<h1>Manage Clients</h1>
-<h3>Add, delete, change something about client</h3>
-
-<div class="row">
-    <div class="col-md-6">
+<div>
+    <div>
+        <h1>CLIENT MANAGEMENT</h1>
+        <h3>Add, delete, change something about client</h3>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div>
         <input type="text" ng-model="nameFilter" placeholder="Search..."/>                    
         <table class="table table-striped" >
             <thead>
@@ -12,7 +12,7 @@
                     <th>#</th><th>Name</th><th></th><th></th>
                 </tr>
             </thead><tbody>
-                <tr ng-repeat="person in people| filter: nameFilter">
+                <tr ng-repeat="person in clientList| filter: nameFilter">
                     <td>{{$index}}</td>
                     <td >{{person.name}}</td>
                     <td class=" btn btn-primary" ng-click="openClient(person.id)">Edit</td>

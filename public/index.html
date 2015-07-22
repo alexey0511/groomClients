@@ -28,11 +28,11 @@
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/newclient">New Client</a></li> 
-                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/clients">Clients</a></li>
-                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/sell">Buy haircut</a></li>
-                        <li ng-if="currentUser.role === 'user' || 'admin'"><a href="#/scanClient">Scan QR Code</a></li>
+                    <ul class="nav navbar-nav" ng-show="currentUser">
+                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/newclient">New Client</a></li> 
+                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/clients">Clients</a></li>
+                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/sell">Sales</a></li>
+                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/scanClient">Scan QR Code</a></li>
                         <li class="dropdown" ng-if="currentUser.role === 'admin'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >

@@ -1,37 +1,53 @@
 'use strict';
 
-angular.module('myApp.manageProducts', ['ngRoute'])
+angular.module('myApp.manageProducts', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/manageproducts', {
                     templateUrl: 'pages/_10.manageProducts/manageProducts.html',
-                    controller: 'ManageProductsController'
+                    controller: 'ManageProductsController',
+                    data: {authorizedRoles: [USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
         .controller('ManageProductsController', function ($scope, $http, commonFunctions, clientsService) {
+            $scope.init = function () {
+                $scope.checkProducts().then(null, function () {
+                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load product list"});
+                });
 
-            $http.get('/api/getProducts')
-                    .success(function (response) {
-                        $scope.products = response;
-                    });
-//            $scope.scanning = true;
-
+            };
             $scope.addProduct = function () {
                 if ($scope.newProduct && $scope.newProduct.name && $scope.newProduct.price) {
-                $scope.newProduct.id = commonFunctions.generateGuid();
-                $scope.products.push($scope.newProduct);
-                $http.post('/api/products', $scope.newProduct)
-                        .success(function (p) {
-                            console.log("ADD NEW PRODUCT ",p.id);
-                        });
-                $scope.newProduct = {};
+                    $scope.newProduct.id = commonFunctions.generateGuid();
+                    $scope.products.push($scope.newProduct);
+                    $http.post('/api/products', $scope.newProduct).then(
+                            function () {
+                                $scope.newProduct = {};
+                            },
+                            function () {
+                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the product"});
+                            });
+                }
             };
-        }
             $scope.removeProduct = function (id) {
-                console.log("-- DELETE PRODUCT", id);
-                var productIndex = clientsService.findClientIndex(id, $scope.products);
-                var product = $scope.products.splice(productIndex, 1);
-                console.log(product[0]._id);
-                $http.post('/api/deleteProducts',product[0]);
+                commonFunctions.adminProof().then(function (response) {
+                    if (response) {
+                        var productIndex = clientsService.findClientIndex(id, $scope.products);
+                        $http.post('/api/deleteProducts', $scope.products[productIndex]).then(
+                                function () {
+                                    $scope.products.splice(productIndex, 1);
+                                },
+                                function () {
+                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the product"});
+                                });
+                    }
+                });
             };
-        }); // end of controller
+            $scope.init();
+        }); 

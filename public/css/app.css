@@ -51,6 +51,9 @@
 #shoppingCart .barber {
     font-size:200%;
 }
+#shoppingCart .payment {
+    font-size:200%;
+}
 #shoppingCart div {
     margin: 10px 0px;
 }
