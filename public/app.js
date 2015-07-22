@@ -1,15 +1,50 @@
 'use strict';
+
+angular.module('myApp.constants', [])
+        .constant("DEFAULT_SETTINGS", {
+            numberVisits: 6,
+            winMessage: "HALF PRICE HAIR CUT",
+            defaultPrice: "30",
+            storeId: '123',
+            productExpiration: '42'
+        })
+        .constant('AUTH_EVENTS', {
+            loginSuccess: 'auth-login-success',
+            loginFailed: 'auth-login-failed',
+            logoutSuccess: 'auth-logout-success',
+            sessionTimeout: 'auth-session-timeout',
+            notAuthenticated: 'auth-not-authenticated',
+            notAuthorized: 'auth-not-authorized'
+        })
+        .constant('USER_ROLES', {
+            all: '*',
+            user: 'user',
+            admin: 'admin'
+        })
+        .constant('appConfig', {
+            //            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            //            DbPath: 'hwhl/collections/',
+            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            DbPath: 'hwhl_dev/collections/',
+            DbUrl: 'https://api.mongolab.com/api/1/databases/',
+            MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
+            MsgSvcUser: 'alexey0511',
+            MsgSvcPwd: 'REHFEfEQEVBPPF',
+            MsgSvcApiId: '3513880'
+        });
+
 // Declare app level module which depends on views, and components
 angular.module('myApp', [
     'ngRoute',
+    'myApp.constants',
     'myApp.clients',
     'myApp.sell',
     'myApp.scanClient',
     'myApp.visits',
     'myApp.newclient',
-   'myApp.manageProducts',
+    'myApp.manageProducts',
     'myApp.manageUsers',
-    ,'myApp.manageClients',
+    'myApp.manageClients',
     'myApp.generateQR',
     'ngCookies',
     'myApp.report',
@@ -62,6 +97,20 @@ angular.module('myApp', [
                 $cookieStore.remove('userInfo');
                 Session.destroy();
             };
+            $scope.checkPurchases = function () {
+                var defer = $q.defer();
+                if (!$scope.visits) {
+                    $http.get('/api/getVisits').then(
+                            function (response) {
+                                $scope.visits = response.data;
+                                defer.resolve();
+                            },
+                            function () {
+                                defer.reject();
+                            });
+                }
+                return defer.promise;
+            };
             $scope.checkClients = function () {
                 var defer = $q.defer();
                 if (Array.isArray($scope.people && $scope.people.length > 0)) {
@@ -73,7 +122,7 @@ angular.module('myApp', [
                                 defer.resolve();
                             })
                             .error(function () {
-                                alert("can't connect to database")
+                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load client list"});
                                 defer.reject();
                             });
                 }
@@ -84,7 +133,7 @@ angular.module('myApp', [
                 if (Array.isArray($scope.users && $scope.users.length > 0)) {
                     defer.resolve();
                 } else {
-                    $http.get('/api/getUserList')
+                    $http.get('/api/users')
                             .success(function (response) {
                                 $scope.users = response;
                                 defer.resolve();
@@ -99,9 +148,28 @@ angular.module('myApp', [
                 console.log(">>", visit);
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.people);
                 $scope.increaseCount(clientIndex);
+                $scope.people[clientIndex].points += visit.price * 100 / 1000;
+// redeem right away - use half price haircut
+                if ($scope.people[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
+                    $scope.people[clientIndex].counters.freeVisits += 1;
+                    // Invoking immediatelly for now. ToDo: implement invoke on button click;
+                    $scope.redeemCoupon(clientIndex);
+                    visit.price = Number(visit.price) * 100 / 2 / 100;
+                    $scope.people[clientIndex].points -= visit.price;
+                }
+                if ($scope.people[clientIndex].visits > 1 && $scope.people[clientIndex].new) {
+                    $scope.people[clientIndex].new = false;
+                }
                 $http.post('/api/visits', visit)
                         .success(function () {
-                            $http.post('/api/clients', $scope.people[clientIndex]);
+                            var clientVisit = JSON.stringify(visit);
+                            $scope.people[clientIndex].visits.push(clientVisit);
+                            $http.post('/api/clients', $scope.people[clientIndex])
+                                    .success(function () {
+                                    })
+                                    .error(function (err) {
+                                        console.log("ERROR OCCURED", err);
+                                    });
                         });
             };
             $scope.increaseCount = function (clientIndex) {
@@ -111,13 +179,27 @@ angular.module('myApp', [
                     $scope.people[clientIndex].counters.progress += 1;
                     $scope.people[clientIndex].counters.visits += 1;
                     $scope.people[clientIndex].lastVisit = new Date();
-                    if ($scope.people[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
-                        $scope.people[clientIndex].counters.freeVisits += 1;
-                        // Invoking immediatelly for now. ToDo: implement invoke on button click;
-                        $scope.redeemCoupon(clientIndex);
-                    }
                 } else {
                     console.log("Error while adding...");
+                }
+            };
+            $scope.decreaseCount = function (clientIndex) {
+                if ($scope.people[clientIndex].counters.progress > 0) {
+                    $http.post('/api/removeLatestPurchase', {client: $scope.people[clientIndex]})
+                            .success(function () {
+                                if ($scope.people[clientIndex].counters.freeVisits > 0
+                                        && $scope.people[clientIndex].counters.visits > 0) {
+                                    $scope.people[clientIndex].counters.freeVisits -= 1;
+                                }
+                                if ($scope.people[clientIndex].counters.progress > 0) {
+                                    $scope.people[clientIndex].counters.progress -= 1;
+                                }
+                                if ($scope.people[clientIndex].counters.visits > 0) {
+                                    $scope.people[clientIndex].counters.visits -= 1;
+                                }
+                                // Update record in DB
+                                $http.post('/api/clients', $scope.people[clientIndex]);
+                            });
                 }
             };
             $scope.redeemCoupon = function (clientIndex) {
@@ -148,7 +230,7 @@ angular.module('myApp', [
                 if (Array.isArray($scope.products && $scope.products.length > 0)) {
                     defer.resolve();
                 } else {
-                    $http.get('/api/getProducts')
+                    $http.get('/api/products')
                             .success(function (response) {
                                 $scope.products = response;
                                 defer.resolve();
@@ -207,25 +289,6 @@ angular.module('myApp', [
                 }
             };
         })
-        .constant("DEFAULT_SETTINGS", {
-            numberVisits: 6,
-            winMessage: "HALF PRICE HAIR CUT",
-            defaultPrice: "35",
-            storeId: '123',
-            productExpiration: '0'
-        })
-        .constant('AUTH_EVENTS', {
-            loginSuccess: 'auth-login-success',
-            loginFailed: 'auth-login-failed',
-            logoutSuccess: 'auth-logout-success',
-            sessionTimeout: 'auth-session-timeout',
-            notAuthenticated: 'auth-not-authenticated',
-            notAuthorized: 'auth-not-authorized'
-        })
-        .constant('USER_ROLES', {
-            all: '*',
-            user: 'user'
-        })
         .factory('AuthService', function ($http, Session, $cookieStore) {
             var authService = {};
             authService.login = function (credentials) {
@@ -256,7 +319,6 @@ angular.module('myApp', [
             };
             return authService;
         })
-
         .service('Session', function () {
             this.create = function (sessionId, userId, userRole) {
                 this.id = sessionId;
@@ -269,55 +331,73 @@ angular.module('myApp', [
                 this.userRole = null;
             };
         })
-        .config(['$routeProvider', '$httpProvider', 'USER_ROLES', function ($routeProvider, $httpProvider, USER_ROLES) {
-//                delete $httpProvider.defaults.headers.common['X-Requested-With'];
-                $httpProvider.interceptors.push([
-                    '$injector',
-                    function ($injector) {
+        .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
+                //                delete $httpProvider.defaults.headers.common['X-Requested-With'];
+                $httpProvider.interceptors.push(['$injector', function ($injector) {
                         return $injector.get('authInterceptor');
                     }
                 ]);
-                $routeProvider.when('/login', {
-                    templateUrl: 'pages/1.login/login.html',
-                    controller: 'LoginController'
-
-                });
-                $routeProvider.when('/clients', {
-                    templateUrl: 'pages/2.viewClients/clients.html',
-                    controller: 'ClientsController',
-                    data: {
-                        authorizedRoles: [USER_ROLES.user]
-                    },
-                    resolve: {
-                        auth: function resolveAuthentication(AuthResolver) {
-                            return AuthResolver.resolve();
-                        }
-                    }
-                });
-                $routeProvider.when('/clients/:id', {
-                    templateUrl: 'pages/2.viewClients/client.html',
-                    controller: 'SingleClientController',
-                    data: {
-                        authorizedRoles: [USER_ROLES.user]
-                    },
-                    resolve: {
-                        auth: function resolveAuthentication(AuthResolver) {
-                            return AuthResolver.resolve();
-                        }
-                    }
-                });
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
-        .service('commonFunctions', function () {
+        .service('commonFunctions', function ($modal, $q) {
             return {
                 generateGuid: function guid() {
                     function s4() {
-                        return Math.floor((1 + Math.random()) * 0x10000)
-                                .toString(16)
+                        return Math.floor((1 + Math.random()) * 0x10000).toString(16)
                                 .substring(1);
                     }
                     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                             s4() + '-' + s4() + s4() + s4();
+                },
+                confirmDialog: function () {
+                    var defer = $q.defer();
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'pages/partials/ConfirmRemove.html',
+                        controller: 'ConfirmRemoveController',
+                        size: 'sm'
+                    });
+                    modalInstance.result.then(function (result) {
+                        defer.resolve(result);
+                    }, function () {
+                        defer.reject(false);
+                    });
+                    return defer.promise;
+                },
+                adminProof: function () {
+                    var defer = $q.defer();
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'pages/partials/adminProof.html',
+                        controller: 'adminProofController',
+                        size: 'sm'
+                    });
+                    modalInstance.result.then(function (result) {
+                        defer.resolve(result);
+                    }, function () {
+                        defer.reject(false);
+                    });
+                    return defer.promise;
+                },
+                customAlert: function (alert) {
+                    var defer = $q.defer();
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'pages/partials/customAlert.html',
+                        controller: 'customAlertController',
+                        size: 'sm',
+                        resolve: {
+                            alert: function () {
+                                return alert;
+                            }
+                        }
+                    });
+                    modalInstance.result.then(function (result) {
+                        defer.resolve(true);
+                    }, function () {
+                        defer.reject(false);
+                    });
+                    return defer.promise;
                 }
             };
         })
@@ -338,18 +418,6 @@ angular.module('myApp', [
                 }
             };
         })
-        .constant('appConfig', {
-//            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
-//            DbPath: 'hwhl/collections/',
-            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
-            DbPath: 'hwhl_dev/collections/',
-            DbUrl: 'https://api.mongolab.com/api/1/databases/',
-            MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
-            MsgSvcUser: 'alexey0511',
-            MsgSvcPwd: 'REHFEfEQEVBPPF',
-            MsgSvcApiId: '3513880'
-        }
-        )
         .factory('clientsService', function clientsService($http) {
             return {
                 findClientByQrCode: function (qrcode, scope) {
@@ -383,8 +451,7 @@ angular.module('myApp', [
 //                                .error(function (data, status, headers, config) {
 //                                    alert(status);
 //                                });
-                        var data = {
-                            "table": "clients",
+                        var data = {"table": "clients",
                             "clients": clients_saved,
                             "method": "POST",
                             "request": "saveClients",
@@ -399,8 +466,7 @@ angular.module('myApp', [
 //                    var url = "https://api.mongolab.com/api/1/databases/better-you/collections/clients" + id + "?apiKey=" + appConfig.DbId;
 //                    $http.delete(url);
                     var url = '/dbservice';
-                    var data = {
-                        "table": "clients",
+                    var data = {"table": "clients",
                         "id": id,
                         "method": "POST",
                         "request": "delete",
@@ -412,8 +478,7 @@ angular.module('myApp', [
 //                    var url = appConfig.DbUrl + appConfig.DbPath + "clients/" + "123456789" + "?apiKey=" + appConfig.DbId;
 //                    return $http.get(url);
                     var url = '/dbservice';
-                    var data = {
-                        "table": "clients",
+                    var data = {"table": "clients",
                         "method": "POST",
                         "request": "getAll",
                         "user": $rootScope.globals.currentUser
@@ -422,85 +487,10 @@ angular.module('myApp', [
                 }
             };
         })
-// Database Actions SERVICE
-        .factory('DbActionsService', function ($http, appConfig, $rootScope) {
-            var DbActionsService = {};
-            var url = '/dbservice';
-            DbActionsService.getRecord = function (table, query) {
-//                var url = appConfig.DbUrl + appConfig.DbPath + table +
-//                        '?q=' + query + '&apiKey=' + appConfig.DbId;
-//                return $http.get(url);
-                var data = {
-                    "table": table,
-                    "query": query,
-                    "method": "POST",
-                    "request": "findRecord",
-                    "user": $rootScope.globals.currentUser
-                };
-                return $http.post(url, data);
-            };
-            DbActionsService.create = function (table, record) {
-                var data = {
-                    "table": table,
-                    "record": record,
-                    "method": "POST",
-                    "request": "create",
-                    "user": $rootScope.globals.currentUser
-                };
-                return $http.post(url, data);
-            };
-            DbActionsService.delete = function (table, id) {
-                if (typeof (id) !== 'undefined') {
-//                    var url = appConfig.DbUrl + appConfig.DbPath + table + "/" + id + "?apiKey=" + appConfig.DbId;
-//                    return  $http.delete(url);
-                    var data = {
-                        "table": table,
-                        "id": id,
-                        "method": "POST",
-                        "request": "delete",
-                        "user": $rootScope.globals.currentUser
-                    };
-                    return $http.post(url, data);
-                }
-                ;
-            };
-            DbActionsService.update = function (table, id, attrs) {
-                var data = {
-                    "table": table,
-                    "id": id,
-                    "attrs": attrs,
-                    "method": "POST",
-                    "request": "update",
-                    "user": $rootScope.globals.currentUser
-                };
-                return $http.post(url, data);
-            };
-            DbActionsService.getAll = function (table) {
-//                var url = appConfig.DbUrl + appConfig.DbPath + table + "?apiKey=" + appConfig.DbId;
-//                return $http.get(url);
-                var data = {
-                    "table": table,
-                    "method": "POST",
-                    "request": "getAll",
-//                    "user": scope.currentUser
-                };
-                return $http.post(url, data);
-            };
-            DbActionsService.getRecord1 = function (table, id) {
-                var data = {
-                    "table": table,
-                    "method": "POST",
-                    "request": "getRecord",
-                    "id": id,
-                    "user": $rootScope.globals.currentUser
-                };
-                return $http.post(url, data);
-            };
-            return DbActionsService;
-        })
-        .run(['$rootScope', 'AUTH_EVENTS', 'AuthService',
-            function ($rootScope, AUTH_EVENTS, AuthService) {
-                // keep user logged in after page refresh
+
+        .run(['$rootScope', 'AUTH_EVENTS', 'AuthService', '$location',
+            function ($rootScope, AUTH_EVENTS, AuthService, $location) {
+
                 $rootScope.$on(AUTH_EVENTS.loginFailed, function () {
                     console.log("App Run rootscope: login failed");
                 });
@@ -516,40 +506,10 @@ angular.module('myApp', [
                             } else {
                                 // user is not logged in
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+                                $location.path('/login');
                             }
                         }
                     }
                 });
-            }])
-        .directive('loginDialog', function (AUTH_EVENTS) {
-            return {
-                restrict: 'A',
-                template: '<div ng-if="visible" ng-include="\'/pages/1.login/login.html\'"></div>',
-                controller: 'LoginController',
-                link: function (scope) {
-                    var showDialog = function () {
-                        scope.visible = true;
-                    };
-                    var hideDialog = function () {
-                        scope.visible = false;
-                    }
-                    scope.visible = false;
-                    scope.$on(AUTH_EVENTS.notAuthenticated, showDialog);
-                    scope.$on(AUTH_EVENTS.sessionTimeout, showDialog);
-                    scope.$on(AUTH_EVENTS.loginSuccess, hideDialog);
-                }
-            };
-        })
-        .directive('newClientDialog', function (AUTH_EVENTS) {
-            return {
-                restrict: 'A',
-                template: '<div ng-include="\'/pages/3.viewNewClient/newClientDialog.html\'"></div>',
-                controller: 'NewClientController',
-                link: function (scope) {
-                    var showDialog = function () {
-                        scope.visible = true;
-                    };
-                    scope.visible = false;
-                }
-            };
-        })
+            }]);
+

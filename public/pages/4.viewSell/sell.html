@@ -1,4 +1,7 @@
-<div><h1>SHOPPING CART</h1>
+<div>
+    <div><h1>SHOPPING CART</h1>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+    </div>
     <div id="shoppingCartPanel">
         <div class="row">
             <div class="col-sm-4">
@@ -21,9 +24,25 @@
                             <th>#</th><th>Name</th>
                         </tr>
                     </thead><tbody>
-                        <tr ng-repeat="person in people| limitTo:5 |filter:nameFilter track by $index" >
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button ng-show="showNewClient" id="sellFormHideButton" class="btn btn-warning" ng-click="showNewClient = !showNewClient">EXISTING CLIENT</button>
+                                <button ng-hide="showNewClient" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#</td>
+                            <td>
+                                <div ng-show="showNewClient"> <input capitalize-first name="firstName" placeholder="First name" ng-model="person.firstName">
+                                    <input capitalize-first name="lastName" placeholder="Last name" ng-model="person.lastName">
+                                    <button class="btn btn-primary" ng-click="addClient(person, true)">Add</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-hide="showNewClient" ng-repeat="person in people| limitTo:5 |filter:nameFilter track by $index" >
                             <td>{{$index + 1}}</td>
-                            <td ng-click='addClient(person)'> {{person.firstName}} {{person.lastName}}</td>
+                            <td ng-click="addClient(person)"> {{person.firstName}} {{person.lastName}}</td>
                         </tr>
                     <tbody>
                 </table>

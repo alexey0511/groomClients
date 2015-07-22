@@ -1,11 +1,18 @@
 'use strict';
 
-angular.module('myApp.newclient', ['ngRoute'])
+angular.module('myApp.newclient', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', function ($routeProvider) {
+        .config(['$routeProvider', 'USER_ROLES',function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/newclient', {
                     templateUrl: 'pages/3.viewNewClient/newclient.html',
-                    controller: 'NewClientController'
+                    controller: 'NewClientController',
+                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
         .controller('NewClientController', function ($scope, $location, commonFunctions, $http, DEFAULT_SETTINGS) {
@@ -27,6 +34,8 @@ angular.module('myApp.newclient', ['ngRoute'])
                 };
                 $scope.newClient.lastVisit = new Date();
                 $scope.newClient.createdOn = new Date();
+                $scope.newClient.visits = [];
+                $scope.newClient.points = 0;
                 // save to DB
                 console.log("NEW", $scope.newClient);
                 var visit = {
@@ -48,4 +57,17 @@ angular.module('myApp.newclient', ['ngRoute'])
             $scope.resetNewClientForm = function () {
                 $scope.newClient = angular.copy($scope.newClientMaster);
             };
-        });
+        })
+        .directive('newClientDialog', function (AUTH_EVENTS) {
+            return {
+                restrict: 'A',
+                template: '<div ng-include="\'/pages/3.viewNewClient/newClientDialog.html\'"></div>',
+                controller: 'NewClientController',
+                link: function (scope) {
+                    var showDialog = function () {
+                        scope.visible = true;
+                    };
+                    scope.visible = false;
+                }
+            };
+        })

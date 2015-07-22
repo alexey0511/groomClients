@@ -1,25 +1,34 @@
 'use strict';
 
-angular.module('myApp.txting', ['ngRoute'])
+angular.module('myApp.txting', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
-                $httpProvider.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
-                delete $httpProvider.defaults.headers.common['X-Requested-With'];
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/message', {
                     templateUrl: 'pages/9.txtClients/txtClients.html',
-                    controller: 'TxtClientsController'
+                    controller: 'TxtClientsController',
+                    data: {authorizedRoles: [USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
         .controller('TxtClientsController', function ($scope, $rootScope, $http, msgService, clientsService, DEFAULT_SETTINGS) {
             var clientIndex, lastVisitDateTemp;
+            $scope.init = function () {
+                $scope.lastVisitDate = new Date().setDate(new Date().getDate() - DEFAULT_SETTINGS.productExpiration);
+                lastVisitDateTemp = new Date($scope.lastVisitDate);
 
-            $http.get('/api/getClients')
-                    .success(function (response) {
-                        $scope.setPeopleList(response);
-                        $scope.totalDue();
-                    });
-            $scope.lastVisitDate = new Date().setDate(new Date().getDate() - DEFAULT_SETTINGS.productExpiration);
-            lastVisitDateTemp = new Date($scope.lastVisitDate);
+                $scope.checkClients().then(
+                        function () {
+                            $scope.totalDue();
+                        },
+                        function () {
+                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the product"});
+                        });
+            };
             $scope.totalDue = function () {
                 $scope.peopleDue = [];
                 for (var i = 0, l = $scope.people.length; i < l; i++) {
@@ -29,10 +38,9 @@ angular.module('myApp.txting', ['ngRoute'])
                 }
                 return $scope.peopleDue.length;
             };
-
             $scope.checkStatusTxt = function (id) {
                 clientIndex = clientsService.findClientIndex(id, $scope.people);
-                if ((clientIndex || clientIndex === 0) 
+                if ((clientIndex || clientIndex === 0)
                         && $scope.people[clientIndex].notification
                         && $scope.people[clientIndex].notification.msgId
                         ) {
@@ -40,14 +48,11 @@ angular.module('myApp.txting', ['ngRoute'])
                             .then(function (status) {
                                 $scope.people[clientIndex].notification.msgStatus = status;
                             },
-                            function(er) {
-                            $scope.people = er;
-                        
-                            });
-                }
-                else {
-                            $scope.people = "no if";
-                    console.log("cannot find client index");
+                                    function (er) {
+                                        $scope.alerts.push({type: 'danger', msg: "Cannot execute your request"});
+                                    });
+                } else {
+                    $scope.alerts.push({type: 'danger', msg: "Cannot execute your request"});
                 }
             };
 
@@ -60,19 +65,20 @@ angular.module('myApp.txting', ['ngRoute'])
                                 $scope.people[clientIndex].notification = {msgId: msgId};
                                 $http.post('/api/clients/' + $scope.people[clientIndex].id, $scope.people[clientIndex])
                                         .success(function (r) {
-                                            console.log("Update successfull");
+                                            $scope.alerts.push({type: 'success', msg: "Message has been sent"});
                                         });
                             },
                                     function (error) {
-                                        console.log(error);
+                                        $scope.alerts.push({type: 'danger', msg: "Cannot execute your request"});
                                     });
                 } else {
-                    console.log("No clientIndex");
+                    $scope.alerts.push({type: 'danger', msg: "Cannot execute your request"});
                 }
             };
+            $scope.init();
         })
         // SERVICES
-        .factory('msgService', function ($http, $q, appConfig, DbActionsService) {
+        .factory('msgService', function ($http, $q, appConfig, commonFunctions) {
             var msgService = {};
             msgService.validatePhoneNumberData = function (to) {
                 var regex = new RegExp('^(642)[0-9]{8}$');
@@ -95,10 +101,8 @@ angular.module('myApp.txting', ['ngRoute'])
                     "msgId": msgId
                 };
                 //action
-                console.log("before post");
                 $http.post(queryMsgUrl, postData)
                         .success(function (status) {
-                            console.log('status');
                             status = status.substr(status.length - 3);
                             if (status === '004') {
                                 status = 'delivered';
@@ -108,7 +112,6 @@ angular.module('myApp.txting', ['ngRoute'])
                             deferred.resolve(status);
                         })
                         .error(function (error) {
-                            console.log(error);
                             deferred.reject(error);
                         });
                 return deferred.promise;
@@ -135,14 +138,14 @@ angular.module('myApp.txting', ['ngRoute'])
                     deferred.reject('1');
                 }
                 if (person.phone != '64225051187' && person.phone != '64220998780') {
-                    alert("It's testing mode now. Messages go to Alex&Muni only. The format '642XXXXXXXX'");
+                    commonFunctions.customAlert("It's testing mode now. Messages go to Alex&Muni only. The format '642XXXXXXXX'");
                     deferred.reject('2');
                 } else {
-                    console.log("Sending text to " + person.phone + " ::" + data.text + "::");
+                    // 
+                    commonFunctions.customAlert("Sending text to " + person.phone + " ::" + data.text + "::");
                 }
                 $http.post('/texting/smssendtxt', data).
                         success(function (id) {
-                            console.log("Success", id);
                             deferred.resolve(id);
                         })
                         .error(function (error) {
@@ -150,38 +153,5 @@ angular.module('myApp.txting', ['ngRoute'])
                         });
                 return deferred.promise;
             };
-
-            //            msgService.sendTxtHttp = function (person) {
-            //                var deferred = $q.defer();
-            //                var text;
-            //                text = prompt("HTTP: Please enter txt message", "Hi " + person.firstName);
-            //                if (text) {
-            //                    text = "Hi " + person.firstName;
-            //                }
-            //                // validation
-            //                // validate number
-            //                if (!msgService.validateData(person.phone)) {
-            //                    return;
-            //                }
-            //                if (person.phone != '64225051187' && person.phone != '64220998780') {
-            //                    alert("It's testing mode now. Messages go to Alex&Muni only. The format '642XXXXXXXX'");
-            //                    return;
-            //                } else {
-            //                    alert("Sending text to " + person.phone + " ::" + text + "::");
-            //                }
-            //                var url = appConfig.MsgSvcWebsite + "?user=" + appConfig.MsgSvcUser +
-            //                        "&password=" + appConfig.MsgSvcPwd +
-            //                        "&api_id=" + appConfig.MsgSvcApiId +
-            //                        "&to=" + person.phone + "&text=" + text;
-            //                $http.get(url).success(function (msgId) {
-            //
-            //                    person.notification = {
-            //                        "msgId": msgId.substring(4)
-            //                    }
-            //                    DbActionsService.update('clients', person._id, person)
-            //                    deferred.resolve(msgId);
-            //                });
-            //                return deferred.promise;
-            //            };
             return msgService;
-        })
+        });

@@ -1,62 +1,29 @@
 'use strict';
 
-angular.module('myApp.sell', ['ngRoute'])
+angular.module('myApp.sell', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', function ($routeProvider) {
+        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/sell', {
                     templateUrl: 'pages/4.viewSell/sell.html',
-                    controller: 'SellController'
+                    controller: 'SellController',
+                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
-        .controller('SellController', function ($scope, $q, $http, cartService) {
+        .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions) {
             $scope.init = function () {
                 $scope.cart = {};
-                $scope.getUsers()
-                        .then(function () {
-                            $scope.getClients()
-                                    .then(function () {
-                                        $scope.getProducts();
-                                    });
-                        });
-                $scope.cartData = cartService.getProducts();
-            };
-            $scope.getUsers = function () {
-                var defer = $q.defer();
-                $http.get('/api/getUserList')
-                        .success(function (response) {
-                            $scope.users = response;
-                            for (var i = 0, l = $scope.users.length; i < l; i++) {
-                                if ($scope.users[i] === $scope.currentUser.user) {
-                                    $scope.cart.barber = $scope.users[i];
-                                }
-                            }
-                            defer.resolve();
-                        });
-                return defer.promise;
-            };
-            $scope.getClients = function () {
-                var defer = $q.defer();
-                $http.get('/api/getClients')
-                        .success(function (response) {
-                            $scope.setPeopleList(response);
-                            defer.resolve();
-                        })
-                        .error(function () {
-                            alert("can't connect to database")
-                            defer.reject();
-                        });
-                return defer.promise;
-            };
-            $scope.getProducts = function () {
-                var defer = $q.defer();
-                $http.get('/api/getProducts')
-                        .success(function (response) {
-                            $scope.products = response;
-//                            $scope.cartData = response;
+                $scope.showNewClient = false;
+                $scope.checkUsers();
+                $scope.checkClients();
+                $scope.checkProducts();
 
-                            defer.resolve();
-                        });
-                return defer.promise;
+                $scope.cartData = cartService.getProducts();
             };
             $scope.addProduct = function (id, item) {
                 $scope.cartData = cartService.getProducts();
@@ -72,50 +39,80 @@ angular.module('myApp.sell', ['ngRoute'])
                 }
                 $scope.cart.price = total;
                 return total;
-            }
-            $scope.addClient = function (person) {
-                $scope.cart.client = person;
-            }
+            };
+            $scope.addClient = function (person, newClient) {
+                if (newClient === true) {
+                    $scope.createClient(person).then(
+                            function () {
+                                $scope.cart.client = person;
+                            },
+                            function () {
+                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
+                            });
+                } else {
+                    $scope.cart.client = person;
+                }
+            };
+            $scope.createClient = function (person) {
+                var defer = $q.defer();
+                person = {
+                    "firstName": person.firstName,
+                    "lastName": person.lastName,
+                    "id": commonFunctions.generateGuid(),
+                    "name": person.firstName + " " + person.lastName,
+                    "counters": {
+                        "progress": 0,
+                        "visits": 0,
+                        "freeVisits": 0
+                    },
+                    visits: [],
+                    points: 0,
+                    "createdOn": new Date(),
+                    "new": true
+                };
+                $http.post("/api/clients", person)
+                        .then(
+                                function (clientRecord) {
+                                    $scope.people.push(clientRecord);
+                                    defer.resolve(person);
+                                },
+                                function () {
+                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
+                                });
+            };
             $scope.saveSale = function () {
                 if (!$scope.cart.client) {
                     alert("Please select a client");
-                    // TODO - set focus
                     return;
                 }
                 if (!$scope.cart.barber) {
                     $scope.cart.barber = $scope.currentUser.user;
                 }
 
-                if (!$scope.cartData || $scope.cartData.length == 0) {
-                    alert("Please select type of haircut");
+                if (!$scope.cartData || $scope.cartData.length === 0) {
+                    commonFunctions.customAlert("Please select type of haircut");
                     return;
                 }
                 // record visit (haircuts & clients)
                 $scope.cart.products = $scope.cartData;
                 $scope.cart.date = new Date();
-
-                // temprorary (delete after data switched from haircuts to prize)
-                console.log("SAVING...", $scope.cart);
-                var todayDate = new Date();
                 for (var i = 0, l = $scope.cart.products.length; i < l; i++) {
                     var visit = {
                         barber: $scope.cart.barber,
                         client: $scope.cart.client,
                         price: $scope.cart.products[i].price,
-                        date: todayDate,
-                        new : false
+                        date: $scope.cart.date
                     };
+                    visit.new = $scope.cart.client.new;
                     $scope.recordVisit(visit);
                 }
-                alert("saved");
+                commonFunctions.customAlert("saved");
                 $scope.cart = {};
                 $scope.cartData = [];
                 cartService.reset();
             };
             $scope.init();
         })
-
-
         .factory("cartService", function () {
             var cartData = [];
             return {

@@ -1,39 +1,58 @@
 'use strict';
 
-angular.module('myApp.manageUsers', ['ngRoute'])
+angular.module('myApp.manageUsers', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
-                $httpProvider.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
-                delete $httpProvider.defaults.headers.common['X-Requested-With'];
+        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/manageusers', {
                     templateUrl: 'pages/_11.manageUsers/manageUsers.html',
-                    controller: 'manageUsersController'
+                    controller: 'manageUsersController',
+                    data: {authorizedRoles: [USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
         .controller('manageUsersController', function ($scope, $http, commonFunctions, clientsService) {
-            $http.get('/api/getUsers')
-                    .success(function (response) {
-                        $scope.users = response;
-                    });
-//            $scope.scanning = true;
+            $scope.init = function () {
+                $scope.checkUsers().then(null, function () {
+                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load client list"});
+                });
+
+                $scope.alerts = [];
+                $scope.closeAlert = function (index) {
+                    $scope.alerts.splice(index, 1);
+                };
+            };
 
             $scope.addUser = function () {
                 if ($scope.newUser && $scope.newUser.username && $scope.newUser.password && $scope.newUser.role) {
                     $scope.newUser.id = commonFunctions.generateGuid();
                     $scope.users.push($scope.newUser);
-                    $http.post('/api/users', $scope.newUser)
-                            .success(function (p) {
-                                console.log("ADD NEW USER ", p.id);
+                    $http.post('/api/users', $scope.newUser).then(
+                            function () {
+                                $scope.newUser = {};
+                            },
+                            function () {
+                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the user"});
                             });
-                    $scope.newUser = {};
                 }
-                ;
-            }
-            $scope.removeUser = function (id) {
-                console.log("-- DELETE USER", id);
-                var userIndex = clientsService.findClientIndex(id, $scope.users);
-                var user = $scope.users.splice(userIndex, 1);
-                console.log(user[0]._id);
-                $http.post('/api/deleteUsers', user[0]);
             };
+            $scope.removeUser = function (id) {
+                commonFunctions.adminProof().then(function (response) {
+                    if (response) {
+                        var userIndex = clientsService.findClientIndex(id, $scope.users);
+                        $http.post('/api/deleteUsers', {adminProof: response, user: user[0]})
+                                .success(function () {
+                                    $scope.users.splice(userIndex, 1);
+                                })
+                                .error(function () {
+                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the user"});
+                                });
+                    }
+                });
+            };
+            $scope.init();
         });

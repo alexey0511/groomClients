@@ -1,3 +1,13 @@
+#sellFormHideButton {
+    width: 200px;
+}
+#sellFormShowButton {
+    width: 200px;
+}
+.ng-cloak {
+   display: none;
+}
+
 #newClientForm {
     border-radius: 25px;
     border: 2px solid #8AC007;

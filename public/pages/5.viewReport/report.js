@@ -1,65 +1,41 @@
 'use strict';
 
-angular.module('myApp.report', ['ngRoute'])
+angular.module('myApp.report', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', function ($routeProvider) {
+        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/report', {
                     templateUrl: 'pages/5.viewReport/report.html',
-                    controller: 'ReportController'
+                    controller: 'ReportController',
+                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
         .controller('ReportController', function ($scope, $http) {
-            $scope.checkUsers();
-            $scope.today = {};
-            $scope.today.date = new Date();
-            $scope.today.year = $scope.today.date.getFullYear();
-            $scope.today.month = $scope.today.date.getMonth() + 1;
-            $scope.today.day = $scope.today.date.getDate();
-            $scope.stats = {};
-            $scope.stats.acToday = 0;
-            $scope.stats.acWeek = 0;
-            $scope.stats.acMonth = 0;
-            $scope.stats.acYear = 0;
-            $scope.stats.ncToday = 0;
-            $scope.stats.ncWeek = 0;
-            $scope.stats.ncMonth = 0;
-            $scope.stats.ncYear = 0;
-            $scope.stats.ocToday = 0;
-            $scope.stats.ocWeek = 0;
-            $scope.stats.ocMonth = 0;
-            $scope.stats.ocYear = 0;
-            $scope.stats.pToday = 0;
-            $scope.stats.pWeek = 0;
-            $scope.stats.pMonth = 0;
-            $scope.pYear = 0;
-
-            //LOAD ALL DATA
-            $http.get('/api/getVisits')
-                    .success(function (response) {
-                        $scope.haircuts = response;
-                        // query how many clients today
-                        $scope.calcStats($scope.haircuts);
-                    })
-            // FILTER BY USER
-            $scope.userChange = function () {
+            $scope.init = function () {
                 $scope.haircutsByUser = [];
-                for (var i = 0, l = $scope.haircuts.length; i < l; i++) {
-                    if ($scope.selectedUser) {
-                        if ($scope.haircuts[i].barber === $scope.selectedUser) {
-                            $scope.haircutsByUser.push($scope.haircuts[i]);
-                        }
-                        if ($scope.haircutsByUser.length > 0) {
-                            $scope.calcStats($scope.haircutsByUser);
-                        } else {
-                            $scope.resetStats();
-                        }
-                    } else {
-                        $scope.calcStats($scope.haircuts);
-                    }
-                }
+
+                $scope.resetVars();
+                $scope.checkUsers();
+                $scope.checkPurchases().then(
+                        function () {
+                            $scope.calcStats($scope.visits);
+                        }, function () {
+                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
+                });
             };
-            // CALCULATE DATA
-            $scope.calcStats = function (list) {
+
+            $scope.resetVars = function () {
+                $scope.today = {};
+                $scope.today.date = new Date();
+                $scope.today.year = $scope.today.date.getFullYear();
+                $scope.today.month = $scope.today.date.getMonth() + 1;
+                $scope.today.day = $scope.today.date.getDate();
+                $scope.stats = {};
                 $scope.stats.acToday = 0;
                 $scope.stats.acWeek = 0;
                 $scope.stats.acMonth = 0;
@@ -76,12 +52,36 @@ angular.module('myApp.report', ['ngRoute'])
                 $scope.stats.pWeek = 0;
                 $scope.stats.pMonth = 0;
                 $scope.stats.pYear = 0;
+            };
+
+            // FILTER BY USER
+            $scope.userChange = function () {
+                $scope.haircutsByUser = [];
+                for (var i = 0, l = $scope.visits.length; i < l; i++) {
+                    if ($scope.selectedUser) {
+                        if ($scope.visits[i].barber === $scope.selectedUser) {
+                            $scope.haircutsByUser.push($scope.visits[i]);
+                        }
+                        if ($scope.haircutsByUser.length > 0) {
+                            $scope.calcStats($scope.haircutsByUser);
+                        } else {
+                            $scope.resetVars();
+                        }
+                    } else {
+                        $scope.calcStats($scope.visits);
+                    }
+                }
+            };
+            // CALCULATE DATA
+            $scope.calcStats = function (list) {
+                $scope.resetVars();
                 // change list to particular user
                 for (var i = 0, l = list.length; i < l; i++) {
-                    var date = new Date(list[i].date);
-                    var year = date.getFullYear();
-                    var month = date.getMonth() + 1;
-                    var day = date.getDate();
+                    var date, year, month, day;
+                    date = new Date(list[i].date);
+                    year = date.getFullYear();
+                    month = date.getMonth() + 1;
+                    day = date.getDate();
                     if (!list[i].price) {
                         list[i].price = 0;
                     }
@@ -111,25 +111,6 @@ angular.module('myApp.report', ['ngRoute'])
                     $scope.stats.ocMonth = $scope.stats.acMonth - $scope.stats.ncMonth;
                     $scope.stats.ocYear = $scope.stats.acYear - $scope.stats.ncYear;
                 }
-                ;
             };
-            $scope.resetStats = function() {
-                $scope.stats.acToday = 0;
-                $scope.stats.acWeek = 0;
-                $scope.stats.acMonth = 0;
-                $scope.stats.acYear = 0;
-                $scope.stats.ncToday = 0;
-                $scope.stats.ncWeek = 0;
-                $scope.stats.ncMonth = 0;
-                $scope.stats.ncYear = 0;
-                $scope.stats.ocToday = 0;
-                $scope.stats.ocWeek = 0;
-                $scope.stats.ocMonth = 0;
-                $scope.stats.ocYear = 0;
-                $scope.stats.pToday = 0;
-                $scope.stats.pWeek = 0;
-                $scope.stats.pMonth = 0;
-                $scope.stats.pYear = 0;
-                
-            };
+            $scope.init();
         });

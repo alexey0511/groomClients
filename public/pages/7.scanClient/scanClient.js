@@ -1,24 +1,29 @@
 'use strict';
 
-angular.module('myApp.scanClient', ['ngRoute'])
+angular.module('myApp.scanClient', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
-                $httpProvider.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
-                delete $httpProvider.defaults.headers.common['X-Requested-With'];
+        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/scanClient', {
                     templateUrl: 'pages/7.scanClient/scanClient.html',
-                    controller: 'ScanClientController'
+                    controller: 'ScanClientController',
+                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
                 });
             }])
-        .controller('ScanClientController', function ($scope, DEFAULT_SETTINGS, $rootScope, $location, DbActionsService, $http, clientsService) {
+        .controller('ScanClientController', function ($scope, DEFAULT_SETTINGS, clientsService, commonFunctions) {
             $scope.init = function () {
-                $scope.scanning = true;
-                $http.get('/api/getClients')
-                        .success(function (response) {
-                            $scope.setPeopleList(response);
-                        })
-                        .error(function (response) {
-                            console.log("error downloading clients");
+                $scope.scanning = false;
+
+                $scope.checkClients().then(
+                        function () {
+                        },
+                        function () {
+                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't get client list"});
                         });
                 $scope.scanQRAgain();
 
@@ -27,7 +32,7 @@ angular.module('myApp.scanClient', ['ngRoute'])
                 $scope.scanning = true;
                 $('#qrCodeReader').html5_qrcode(function (data) {
                     // do something when code is read
-                    console.log("QR code " + data);
+                    console.log("QR code: " + data);
                     $scope.addVisitViaQR(data);
                 },
                         function (error) {
@@ -48,10 +53,10 @@ angular.module('myApp.scanClient', ['ngRoute'])
                         new : false
                     };
                     $scope.recordVisit(visit);
-                    alert("Thank you for visiting Groom Barbers ");
+                    commonFunctions.customAlert("Thank you for visiting Groom Barbers ");
                     $scope.scanning = false;
                 } else {
-                    alert("No contact found");
+                    $scope.alerts.push({type: 'danger', msg: "No contact found"});
                     $scope.stopScan();
                 }
             };
@@ -59,5 +64,6 @@ angular.module('myApp.scanClient', ['ngRoute'])
                 $.fn.html5_qrcode_stop();
                 $scope.scanning = false;
             };
-            ;$scope.init();
+            ;
+            $scope.init();
         });

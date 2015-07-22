@@ -1,29 +1,40 @@
 'use strict';
-angular.module('myApp.clients', ['ngRoute'])
-        .constant("DEFAULT_SETTINGS", {
-            numberVisits: 6,
-            winMessage: "HALF PRICE HAIR CUT",
-            defaultPrice: "35"
-        })
-        .controller('SingleClientController', function ($scope, $q, $location, $routeParams, $http) {
-            $scope.qrClient = "";
-            $scope.checkClientsList = function () {
-                var defer = $q.defer();
-                if (Array.isArray($scope.people) && $scope.people.length > 0) {
-                    defer.resolve();
-                } else {
-                    $http.get('/api/getClients')
-                            .success(function (response) {
-                                $scope.setPeopleList(response);
-                                defer.resolve();
-                            })
-                            .error(function () {
-                                alert("can't connect to database")
-                                defer.reject();
-                            });
-                }
-                return defer.promise;
+angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap','myApp.constants'])
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+                $routeProvider.when('/clients', {
+                    templateUrl: 'pages/2.viewClients/clients.html',
+                    controller: 'ClientsController',
+                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }
+                });
+                $routeProvider.when('/clients/:id', {
+                    templateUrl: 'pages/2.viewClients/client.html',
+                    controller: 'SingleClientController',
+                    data: {
+                        authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    },
+                    resolve: {
+                        auth: function resolveAuthentication(AuthResolver) {
+                            return AuthResolver.resolve();
+                        }
+                    }});
+            }])
+        .controller('SingleClientController', function ($scope, commonFunctions, $location, $routeParams, $http) {
+            $scope.init = function () {
+                $scope.qrClient = "";
+
+                $scope.checkClients().then(function () {
+                    $scope.getClient();
+                }, function () {
+                    commonFunctions.customAlert("Client not found");
+                });
             };
+
             $scope.getClient = function () {
                 $scope.client = $scope.findClient($routeParams.id);
                 if ($scope.client) {
@@ -32,8 +43,6 @@ angular.module('myApp.clients', ['ngRoute'])
                     $scope.client.counters.visits = Number($scope.client.counters.visits);
                     $scope.client.counters.progress = Number($scope.client.counters.progress);
                     $scope.client.counters.freeVisits = Number($scope.client.counters.freeVisits);
-
-
                     // display QR code
                     if ($scope.client.qrcode) {
                         $scope.qrClient = $scope.client.qrcode.toString();
@@ -43,37 +52,32 @@ angular.module('myApp.clients', ['ngRoute'])
                                 $scope.VisitsArray = response;
                             });
                 } else {
-                    alert("Client not found");
+                    commonFunctions.customAlert("Client not found");
                 }
             };
-            $scope.checkClientsList().then(function () {
-                $scope.getClient();
-            }, function () {
-                alert("Client not found");
-            });
             $scope.updateClient = function () {
                 $http.post('/api/clients/' + $scope.client.id, $scope.client)
                         .success(function (r) {
                             $location.path("/clients");
                         });
             };
+
+            $scope.init();
         })
-        .controller('ClientsController', function ($scope, AUTH_EVENTS, $rootScope, $http, clientsService, $location, DEFAULT_SETTINGS) {
+        .controller('ClientsController', function ($scope, $modal, commonFunctions, $rootScope, $http, clientsService, $location, DEFAULT_SETTINGS) {
+            $scope.init = function () {
+                $scope.currentPage = 0;
+                $scope.pageSize = 50;
 
-            $scope.isLoginPage = false;
+                $scope.checkClients();
 
-            $http.get('/api/getClients')
-                    .success(function (response) {
-                        $scope.setPeopleList(response);
-                    });
+            };
 // BOF PAGINATION 
-            $scope.currentPage = 0;
-            $scope.pageSize = 50;
             $scope.numberOfPages = function () {
                 if (typeof $rootScope.people !== "undefined") {
                     return Math.ceil($rootScope.people.length / $scope.pageSize);
                 }
-            }
+            };
 // EOF PAGINATION 
             $scope.openClient = function (id) {
                 $location.path("/clients/" + id);
@@ -85,31 +89,24 @@ angular.module('myApp.clients', ['ngRoute'])
                     barber: $scope.currentUser.user,
                     client: $scope.people[clientIndex],
                     price: DEFAULT_SETTINGS.defaultPrice,
-                    date: new Date(),
-                    new : false
+                    date: new Date()
                 };
+                visit.new = $scope.people[clientIndex].new;
                 $scope.recordVisit(visit);
             };
             $scope.removeHairCut = function (id) {
                 var clientIndex = clientsService.findClientIndex(id, $scope.people);
                 $scope.verifyCountersNum(clientIndex);
-                var response = confirm("Do you want to remove haircut?");
-                if (response) {
-                    if ($scope.people[clientIndex].counters.freeVisits > 0
-                            && $scope.people[clientIndex].counters.visits > 0) {
-                        $scope.people[clientIndex].counters.freeVisits -= 1;
+                commonFunctions.confirmDialog().then(function (response) {
+                    if (response) {
+                        $scope.decreaseCount(clientIndex);
                     }
-                    if ($scope.people[clientIndex].counters.progress > 0) {
-                        $scope.people[clientIndex].counters.progress -= 1;
-                    }
-                    if ($scope.people[clientIndex].counters.visits > 0) {
-                        $scope.people[clientIndex].counters.visits -= 1;
-                    }
-                    // Update record in DB
-                    $http.post('/api/clients', $scope.people[clientIndex]);
-                }
+                });
             };
+
+            $scope.init();
         })
+
         /*
          * Filter used for pagination.
          * Defines from what number start in the list
@@ -124,3 +121,5 @@ angular.module('myApp.clients', ['ngRoute'])
                 }
             };
         })
+
+

@@ -1,4 +1,4 @@
-<div ng-show="error" class="alert alert-danger">{{error}}</div>
+<alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
 <form name="loginForm" ng-submit="login(credentials)" class="col-md-6" novalidate>
 
     <div class="form-group">
