@@ -16,7 +16,7 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-md-3">
                 <input type="text" ng-model="nameFilter" placeholder="Search..."/>                    
                 <table class="table table-striped table-hover" id='ClientsTableMain' >
                     <thead>
@@ -31,8 +31,8 @@
                         <tr>
                             <td colspan="2">
                                 <button ng-show="showNewClient" id="sellFormHideButton" class="btn btn-warning" ng-click="showNewClient = !showNewClient">EXISTING CLIENT</button>
-                                <button ng-hide="showNewClient" style="width:40%;" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
-                                <button ng-hide="showNewClient" style="width:40%;" id="sellFormShowButton" class="btn btn-primary" ng-click="addClient(noName)">CASUAL</button>
+                                <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
+                                <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="addClient(noName)">CASUAL</button>
                             </td>
                         </tr>
                         <tr>
@@ -47,7 +47,7 @@
                     <tbody>
                 </table>
             </div>
-            <div class="col-sm-4">
+            <div class="col-md-4">
                 <div id="productItemBox">
                         <div ng-repeat="product in products" style="padding:10px;">
                             <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addProduct(product._id, product)">{{product.name}}</div> 
@@ -63,11 +63,11 @@
             </div>
             <div class="col-md-1">
                 <div ng-click="saveSale()" id="shoppingCartDoneButton"
-                     class="btn btn-sm btn-success rotate">DONE</div>
+                     class="btn btn-lg btn-success rotate">DONE</div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-12" id="shoppingCart">
+            <div class="col-md-12" id="shoppingCart">
                 <div class="barber">Barber: 
                     {{cart.barber}}
                 </div>

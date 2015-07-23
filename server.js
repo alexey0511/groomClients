@@ -9,12 +9,6 @@ console.log('Environment: ', env);
 express = require("./node_modules/express");
 expressJwt = require('./node_modules/express-jwt');
 
-//var bodyParser = require('body-parser');
-//var bodyParserJson = bodyParser.json();
-//db = require('./server/dbService');
-//config = require('./server/config.js');
-//db = new db(config[env]);
-
 
 app = express();
 secret = "TheAnswerIs42";
@@ -39,13 +33,6 @@ app.all('*', function (req, res, next) {
 //        });
 //    }
             next();
-
-
-
-
-
-
-
 });
 app.use(express.static("./public"));
 
