@@ -20,6 +20,7 @@
         <script src="components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
     </head>
     <body ng-controller="ApplicationController" class="ng-cloak">
+
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
@@ -32,12 +33,12 @@
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/newclient">New Client</a></li> 
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/clients">Clients</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/sell">Sales</a></li>
+                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/visits">Haircuts</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/scanClient">Scan QR Code</a></li>
                         <li class="dropdown" ng-if="currentUser.role === 'admin'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/report">Report</a></li>
-                                <li ng-if="currentUser.role === 'admin'"><a href="#/visits">Visits</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/message">Txt messaging</a></li>
                             </ul>
                         </li>
@@ -48,6 +49,7 @@
                                 <li role="separator" class="divider"></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageproducts">Manage Products</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageusers">Manage Users</a></li>
+                                <li ng-if="currentUser.role === 'admin'"><a href="#/managestaff">Manage Staff</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageClients">Manage Clients</a></li>
                                 <li role="separator" class="divider"></li>
                                 <!--                                In NEXT Version-->
@@ -105,6 +107,7 @@
         <script src="pages/_10.manageProducts/manageProducts.js"></script>
         <script src="pages/_11.manageUsers/manageUsers.js"></script>
         <script src="pages/_12.manageClients/manageClients.js"></script>
+        <script src="pages/_13.manageBarbers/manageBarbers.js"></script>
         <script src="pages/partials/dialogsModule.js"></script>
 
         <script src="components/version/version.js"></script>

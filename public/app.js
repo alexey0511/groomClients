@@ -1,37 +1,5 @@
 'use strict';
 
-angular.module('myApp.constants', [])
-        .constant("DEFAULT_SETTINGS", {
-            numberVisits: 6,
-            winMessage: "HALF PRICE HAIR CUT",
-            defaultPrice: "30",
-            storeId: '123',
-            productExpiration: '42'
-        })
-        .constant('AUTH_EVENTS', {
-            loginSuccess: 'auth-login-success',
-            loginFailed: 'auth-login-failed',
-            logoutSuccess: 'auth-logout-success',
-            sessionTimeout: 'auth-session-timeout',
-            notAuthenticated: 'auth-not-authenticated',
-            notAuthorized: 'auth-not-authorized'
-        })
-        .constant('USER_ROLES', {
-            all: '*',
-            user: 'user',
-            admin: 'admin'
-        })
-        .constant('appConfig', {
-            //            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
-            //            DbPath: 'hwhl/collections/',
-            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
-            DbPath: 'hwhl_dev/collections/',
-            DbUrl: 'https://api.mongolab.com/api/1/databases/',
-            MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
-            MsgSvcUser: 'alexey0511',
-            MsgSvcPwd: 'REHFEfEQEVBPPF',
-            MsgSvcApiId: '3513880'
-        });
 
 // Declare app level module which depends on views, and components
 angular.module('myApp', [
@@ -46,6 +14,7 @@ angular.module('myApp', [
     'myApp.manageUsers',
     'myApp.manageClients',
     'myApp.generateQR',
+    'myApp.manageStaff',
     'ngCookies',
     'myApp.report',
     'ui.bootstrap',
@@ -98,7 +67,7 @@ angular.module('myApp', [
                     }
                 }
                 return null;
-            }
+            };
             $scope.setCurrentUser = function (user) {
                 $scope.currentUser = user;
                 $cookieStore.put('userInfo', user);
@@ -148,6 +117,22 @@ angular.module('myApp', [
                     $http.get('/api/users')
                             .success(function (response) {
                                 $scope.users = response;
+                                defer.resolve();
+                            })
+                            .error(function () {
+                                defer.reject();
+                            });
+                }
+                return defer.promise;
+            };
+            $scope.checkStaffList = function () {
+                var defer = $q.defer();
+                if (Array.isArray($scope.staffList && $scope.staffList.length > 0)) {
+                    defer.resolve();
+                } else {
+                    $http.get('/api/staff')
+                            .success(function (response) {
+                                $scope.staffList = response;
                                 defer.resolve();
                             })
                             .error(function () {
@@ -340,7 +325,7 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('authInterceptor', function ($rootScope, $q, $cookieStore, AUTH_EVENTS, Session) {
+        .factory('authInterceptor', function ($rootScope, $q, $cookieStore, AUTH_EVENTS, $location) {
             return {
                 request: function (config) {
                     config.headers = config.headers || {};
@@ -358,8 +343,7 @@ angular.module('myApp', [
                     }[response.status], response);
                     return $q.reject(response);
                     if (response.status === 401) {
-                        // handle the case where the user is not authenticated
-
+                        $location.path('/login');
                     }
                     return response || $q.when(response);
                 }
@@ -480,4 +464,38 @@ angular.module('myApp', [
                     }
                 });
             }]);
+
+
+angular.module('myApp.constants', [])
+        .constant("DEFAULT_SETTINGS", {
+            numberVisits: 6,
+            winMessage: "HALF PRICE HAIR CUT",
+            defaultPrice: "30",
+            storeId: '123',
+            productExpiration: '42'
+        })
+        .constant('AUTH_EVENTS', {
+            loginSuccess: 'auth-login-success',
+            loginFailed: 'auth-login-failed',
+            logoutSuccess: 'auth-logout-success',
+            sessionTimeout: 'auth-session-timeout',
+            notAuthenticated: 'auth-not-authenticated',
+            notAuthorized: 'auth-not-authorized'
+        })
+        .constant('USER_ROLES', {
+            all: '*',
+            user: 'user',
+            admin: 'admin'
+        })
+        .constant('appConfig', {
+            //            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            //            DbPath: 'hwhl/collections/',
+            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            DbPath: 'hwhl_dev/collections/',
+            DbUrl: 'https://api.mongolab.com/api/1/databases/',
+            MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
+            MsgSvcUser: 'alexey0511',
+            MsgSvcPwd: 'REHFEfEQEVBPPF',
+            MsgSvcApiId: '3513880'
+        });
 

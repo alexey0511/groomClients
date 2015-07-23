@@ -5,7 +5,7 @@
     width: 200px;
 }
 .ng-cloak {
-   display: none;
+    display: none;
 }
 
 #newClientForm {
@@ -35,11 +35,12 @@
 #productItemBox {
     border-radius: 25px;
     border: 2px solid #8AC007;
+    height: 300px;
 }
 #productItemBox ul li {
     list-style-type: none;
-    padding: 0px; 
-    margin:0px;
+    padding: 0px 10px; 
+    margin:0px 0px 0px -40px;
 }
 #saveSaleButton {
     width:100%;
@@ -64,6 +65,30 @@
 #newClientForm form .ng-invalid.ng-dirty {background-color: lightpink;}
 #newClientForm form .ng-valid.ng-dirty {background-color: lightgreen; }
 #newClientForm div.error {color:red; font-weight:bold; margin-left: 100px;}
+
+#shoppingCartDoneButton {
+    margin: 100px 0px 0px -100px;
+    width: 300px;
+    height: 100px;
+    vertical-align: central
+}
+#shoppingCartDoneButton * {
+    font-weight: bold;
+ }
+.rotate {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+
+    /* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+    -webkit-transform-origin: 50% 50%;
+    -moz-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+}
 /* app css stylesheet */
 /*.menu {
     list-style: none;

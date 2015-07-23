@@ -1,0 +1,32 @@
+<div>
+    <div>
+        <h1>STAFF MANAGEMENT</h1>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div>
+        <table class="table table-striped col-md-6" >
+            <thead>
+                <tr>
+                    <th>#</th><th>Name</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="staff in staffList">
+                    <td>{{$index}}</td>
+                    <td>{{staff.name}}</td>
+                    <td><div class="btn btn-danger" ng-click="removeStaff(staff.id)">Remove</div></td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td><div >{{$index}}</div></td>
+                    <td><input type="text" ng-model="newStaff.name" />
+                    </td>
+                    <td>
+                        <div class="btn btn-primary" ng-click="addStaff()">Add person</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

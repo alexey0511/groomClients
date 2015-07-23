@@ -18,9 +18,14 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions) {
             $scope.init = function () {
                 $scope.showNewClient = false;
-
+                $scope.noName = {
+                    firstName:'Casual',
+                    lastName: 'Customer',
+                    name: "Casual Customer"
+                };
                 $scope.resetCart();
                 $scope.checkUsers();
+                $scope.checkStaffList();
                 $scope.checkClients();
                 $scope.checkProducts();
 
@@ -62,6 +67,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 }
                 $scope.cart.price = total;
                 return total;
+            };
+            $scope.addBarber = function (barber) {
+                    $scope.cart.barber = barber;
             };
             $scope.addClient = function (person, newClient) {
                 if (newClient === true) {

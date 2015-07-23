@@ -85,16 +85,19 @@ router.route('/deleteProducts')
             console.log(req.body);
             db.deleteRecord("products", req.body._id.$oid, success);
         });
-router.route('/getUserList')
+router.route('/staff')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
-            db.getAll("users", function (result) {
-                var users = [];
-                for (var i = 0, l = result.length; i < l; i++) {
-                    users.push(result[i].username);
-                }
-                res.json(users);
+            db.getAll("staff", function (result) {
+                res.json(result);
             });
+        })
+        .post(bodyParserJson, function (req, res) {
+            // get user from JWT and give readable value to the user
+            var success = function (data) {
+                data ? res.json(data) : res.status(400).json({message: "Failed to create a record"});
+            };
+            db.create("/staff", req.body, success);
         });
 router.route('/users')
         .get(function (req, res) {
@@ -103,7 +106,7 @@ router.route('/users')
                 var users = [];
                 for (var i = 0, l = result.length; i < l; i++) {
                     users.push({username: result[i].username,
-                        password: '*******', role: result[i].role, _id: result[i]._id, id: result[i].id});
+                        password: '', role: result[i].role, _id: result[i]._id, id: result[i].id});
                 }
                 res.json(users);
             });

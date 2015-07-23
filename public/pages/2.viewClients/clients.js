@@ -82,33 +82,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
             $scope.openClient = function (id) {
                 $location.path("/clients/" + id);
             };
-            $scope.addHairCut = function (id) {
-                var clientIndex = clientsService.findClientIndex(id, $scope.clientList);
-                if (!clientsService.lastVisitInAnHour($scope.clientList[clientIndex]) ||
-                        confirm("It is a second in an hour, procceed?")) {
-
-                    var visit = {};
-                    visit = {
-                        barber: $scope.currentUser.user,
-                        client: $scope.clientList[clientIndex],
-                        price: DEFAULT_SETTINGS.defaultPrice,
-                        date: new Date()
-                    };
-                    visit.new = $scope.clientList[clientIndex].new;
-                    $scope.recordVisit(visit);
-                } else {
-                    commonFunctions.customAlert("Nothing happened");
-                }
-            };
-            $scope.removeHairCut = function (id) {
-                var clientIndex = clientsService.findClientIndex(id, $scope.clientList);
-                $scope.verifyCountersNum(clientIndex);
-                commonFunctions.confirmDialog().then(function (response) {
-                    if (response) {
-                        $scope.decreaseCount(clientIndex);
-                    }
-                });
-            };
 
             $scope.init();
         })

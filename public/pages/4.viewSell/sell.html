@@ -1,22 +1,22 @@
 <div>
-    <div><h1>SHOPPING CART</h1>
+    <div>
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div id="shoppingCartPanel">
         <div class="row">
             <div class="col-sm-4">
-                <h2>Clients</h2>
+                <h2>CLIENT</h2>
             </div>
             <div class="col-sm-4">
-                <h2>Products</h2>
+                <h2>PRODUCT</h2>
             </div>
             <div class="col-sm-4">
-                <h2>Shopping Cart</h2>
+                <h2>BARBER</h2>
             </div>
         </div>
         <hr>
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-3">
                 <input type="text" ng-model="nameFilter" placeholder="Search..."/>                    
                 <table class="table table-striped table-hover" id='ClientsTableMain' >
                     <thead>
@@ -24,11 +24,15 @@
                             <th>#</th><th>Name</th>
                         </tr>
                     </thead><tbody>
+                        <tr ng-hide="showNewClient" ng-repeat="person in clientList| limitTo:5 | filter:nameFilter track by $index" >
+                            <td>{{$index + 1}}</td>
+                            <td ng-click="addClient(person)"> {{person.firstName}} {{person.lastName}}</td>
+                        </tr>
                         <tr>
-                            <td></td>
-                            <td>
+                            <td colspan="2">
                                 <button ng-show="showNewClient" id="sellFormHideButton" class="btn btn-warning" ng-click="showNewClient = !showNewClient">EXISTING CLIENT</button>
-                                <button ng-hide="showNewClient" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
+                                <button ng-hide="showNewClient" style="width:40%;" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
+                                <button ng-hide="showNewClient" style="width:40%;" id="sellFormShowButton" class="btn btn-primary" ng-click="addClient(noName)">CASUAL</button>
                             </td>
                         </tr>
                         <tr>
@@ -40,28 +44,32 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr ng-hide="showNewClient" ng-repeat="person in clientList| limitTo:5 |filter:nameFilter track by $index" >
-                            <td>{{$index + 1}}</td>
-                            <td ng-click="addClient(person)"> {{person.firstName}} {{person.lastName}}</td>
-                        </tr>
                     <tbody>
                 </table>
-                <div>....................................top 5....................................</div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <div id="productItemBox">
-                    <ul>
-                        <li ng-repeat="product in products" >
-                            <div class="btn btn-primary" ng-click="addProduct(product._id, product)">{{product.name}}</div> 
-                        </li>
-                    </ul>
+                        <div ng-repeat="product in products" style="padding:10px;">
+                            <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addProduct(product._id, product)">{{product.name}}</div> 
+                        </div>
                 </div>
             </div>
-            <div class="col-sm-5" id="shoppingCart">
+            <div class="col-md-4">
+                <div id="productItemBox">
+                    <div ng-repeat="barber in staffList" style="padding:10px;">
+                        <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addBarber(barber.name)">{{barber.name}}</div> 
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div ng-click="saveSale()" id="shoppingCartDoneButton"
+                     class="btn btn-sm btn-success rotate">DONE</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12" id="shoppingCart">
                 <div class="barber">Barber: 
-                    <select ng-model="cart.barber" ng-options="user.username as user.username for user in users">
-                        <option value="">---select barber----</option>
-                    </select> 
+                    {{cart.barber}}
                 </div>
                 <div class="customerName">
                     Customer: <span>{{cart.client.name}}</span>
