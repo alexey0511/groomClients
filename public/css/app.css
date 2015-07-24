@@ -43,6 +43,10 @@
     border: 2px solid #8AC007;
     height: 300px;
     overflow-x: auto;
+    padding: 10px 5px;;
+}
+#productItemBox input {
+width: 100%;    
 }
 #productItemBox ul li {
     list-style-type: none;

@@ -88,8 +88,9 @@ angular.module('myApp', [
                 return defer.promise;
             };
             $scope.checkClients = function () {
+                $scope.loadingClients = true;
                 var defer = $q.defer();
-                if (Array.isArray($scope.clientList && $scope.clientList.length > 0)) {
+                if ($scope.clientList && $scope.clientList.length > 0) {
                     defer.resolve();
                 } else {
                     $http.get('/api/getClients')
@@ -102,6 +103,7 @@ angular.module('myApp', [
                                 defer.reject();
                             });
                 }
+                $scope.loadingClients = false;
                 return defer.promise;
             };
             $scope.checkUsers = function () {

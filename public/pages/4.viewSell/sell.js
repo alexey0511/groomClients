@@ -16,6 +16,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             }])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
             $scope.init = function () {
+                
                 $scope.showNewClient = false;
                 $scope.shoppingCartPoints = 0;
                 $scope.manualDiscountInput = 0;
