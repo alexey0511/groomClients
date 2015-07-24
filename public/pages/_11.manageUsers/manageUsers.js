@@ -44,7 +44,7 @@ angular.module('myApp.manageUsers', ['ngRoute','myApp.constants'])
                 commonFunctions.adminProof().then(function (response) {
                     if (response) {
                         var userIndex = clientsService.findClientIndex(id, $scope.users);
-                        $http.post('/api/deleteUsers', {adminProof: response, user: user[0]})
+                        $http.post('/api/deleteUsers', {adminProof: response, user: $scope.users[userIndex]})
                                 .success(function () {
                                     $scope.users.splice(userIndex, 1);
                                 })

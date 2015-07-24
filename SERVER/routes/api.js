@@ -131,7 +131,21 @@ router.route('/deleteUsers')
                 }
             });
         });
-// VISITS
+router.route('/orders')
+        .get(function (req, res) {
+            // get user from JWT and give readable value to the user
+            db.getAll("orders", function (result) {
+                res.json(result);
+            });
+        })
+        .post(bodyParserJson, function (req, res) {
+            // get user from JWT and give readable value to the user
+            var success = function (data) {
+                data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
+            };
+            db.create("/orders", req.body, success);
+        });
+        // VISITS
 router.route('/getVisits')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user

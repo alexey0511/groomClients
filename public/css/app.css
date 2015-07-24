@@ -1,3 +1,9 @@
+#shoppingCardDiscount {
+
+}
+#shoppingCardDiscount label{
+    font-weight: bold;
+}
 #sellFormHideButton {
     width: 200px;
 }
@@ -74,28 +80,28 @@
 #newClientForm div.error {color:red; font-weight:bold; margin-left: 100px;}
 
 #shoppingCartDoneButton {
-    margin: 100px 0px 0px -100px;
-    width: 300px;
+    margin: 5px;
+    width: 100%;
     height: 100px;
-    vertical-align: central
+    padding: auto 0px;
 }
 #shoppingCartDoneButton * {
     font-weight: bold;
 }
-.rotate {
+/*.rotate {
     -webkit-transform: rotate(-90deg);
     -moz-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
     -o-transform: rotate(-90deg);
     transform: rotate(-90deg);
 
-    /* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+     also accepts left, right, top, bottom coordinates; not required, but a good idea for styling 
     -webkit-transform-origin: 50% 50%;
     -moz-transform-origin: 50% 50%;
     -ms-transform-origin: 50% 50%;
     -o-transform-origin: 50% 50%;
     transform-origin: 50% 50%;
-}
+}*/
 /* app css stylesheet */
 /*.menu {
     list-style: none;

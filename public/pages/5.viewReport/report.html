@@ -4,11 +4,22 @@
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div>
-        <p>Select user</p>
-        <select ng-model="selectedUser" ng-options="user.username as user.username for user in users"
-                ng-change="userChange()">
-            <option value="">ALL</option>  
-        </select>            
+        <div class="row">
+            <div class="col-md-2">
+                <p>Select salon</p>
+                <select ng-model="selectedUser" ng-options="user.username as user.username for user in users"
+                        ng-change="userChange()">
+                    <option value="">ALL</option>  
+                </select>   
+            </div>
+            <div class="col-md-2">
+                <p>Select barber</p>
+                <select ng-model="selectedBarber" ng-options="barber.name as barber.name for barber in staffList"
+                        ng-change="barberChange()">
+                    <option value="">ALL</option>  
+                </select>  
+            </div>
+        </div>
         <table class="table table-striped" id='StatsTableMain' >
             <thead>
                 <tr>

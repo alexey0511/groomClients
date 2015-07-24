@@ -5,25 +5,33 @@
     <div id="shoppingCartPanel">
         <div class="row">
             <div class="col-sm-4">
-                <h2>CLIENT</h2>
+                <h2 style="text-align: center;">BARBER</h2>
             </div>
             <div class="col-sm-4">
-                <h2>PRODUCT</h2>
+                <h2 style="text-align: center;">CLIENT</h2>
             </div>
             <div class="col-sm-4">
-                <h2>BARBER</h2>
+                <h2 style="text-align: center;">PRODUCT</h2>
             </div>
         </div>
         <hr>
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-4">
+                <div id="productItemBox">
+                    <div ng-repeat="barber in staffList" style="padding:10px;">
+                        <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-class="checkActiveBarber(barber.name)" ng-click="makeBarberActive(barber.id)">{{barber.name}}</div> 
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <input type="text" ng-model="nameFilter" placeholder="Search..."/>                    
                 <table class="table table-striped table-hover" id='ClientsTableMain' >
                     <thead>
                         <tr>
                             <th>#</th><th>Name</th>
                         </tr>
-                    </thead><tbody>
+                    </thead>
+                    <tbody>
                         <tr ng-hide="showNewClient" ng-repeat="person in clientList| limitTo:5 | filter:nameFilter track by $index" >
                             <td>{{$index + 1}}</td>
                             <td ng-click="addClient(person)"> {{person.firstName}} {{person.lastName}}</td>
@@ -32,13 +40,13 @@
                             <td colspan="2">
                                 <button ng-show="showNewClient" id="sellFormHideButton" class="btn btn-warning" ng-click="showNewClient = !showNewClient">EXISTING CLIENT</button>
                                 <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="showNewClient = !showNewClient">NEW CLIENT</button>
-                                <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="addClient(noName)">CASUAL</button>
+                                <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="addClient(anonymousClient)">CASUAL</button>
                             </td>
                         </tr>
-                        <tr>
-                            <td>#</td>
+                        <tr ng-show="showNewClient">
+                            <td></td>
                             <td>
-                                <div ng-show="showNewClient"> <input capitalize-first name="firstName" placeholder="First name" ng-model="person.firstName">
+                                <div> <input capitalize-first name="firstName" placeholder="First name" ng-model="person.firstName">
                                     <input capitalize-first name="lastName" placeholder="Last name" ng-model="person.lastName">
                                     <button class="btn btn-primary" ng-click="addClient(person, true)">Add</button>
                                 </div>
@@ -49,28 +57,21 @@
             </div>
             <div class="col-md-4">
                 <div id="productItemBox">
-                        <div ng-repeat="product in products" style="padding:10px;">
-                            <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addProduct(product._id, product)">{{product.name}}</div> 
-                        </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div id="productItemBox">
-                    <div ng-repeat="barber in staffList" style="padding:10px;">
-                        <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addBarber(barber.name)">{{barber.name}}</div> 
+                    <div ng-repeat="product in products" style="padding:10px;">
+                        <div class="btn btn-primary" style="width: 100%; height: 50px;" ng-click="addProduct(product._id, product, barberActive)">{{product.name}}</div> 
                     </div>
                 </div>
             </div>
-            <div class="col-md-1">
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <div ng-click="saveSale()" id="shoppingCartDoneButton"
                      class="btn btn-lg btn-success rotate">DONE</div>
             </div>
+
         </div>
         <div class="row">
             <div class="col-md-12" id="shoppingCart">
-                <div class="barber">Barber: 
-                    {{cart.barber}}
-                </div>
                 <div class="customerName">
                     Customer: <span>{{cart.client.name}}</span>
                 </div>
@@ -81,13 +82,14 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>#</th><th>Name</th><th>Quantity</th><th>Price</th><th>SubTotal</th><th></th>
+                                <th>#</th><th>Name</th><th>Barber</th><th>Quantity</th><th>Price</th><th>SubTotal</th><th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr ng-repeat="service in cartServices">
                                 <td>{{$index}}</td>
                                 <td>{{service.name}}</td>
+                                <td>{{service.barber}}</td>
                                 <td>{{service.qty}}</td>
                                 <td>{{service.price}}</td>
                                 <td>{{service.price * service.qty}}</td>
@@ -97,6 +99,7 @@
                             <tr ng-repeat="item in cartProducts">
                                 <td>{{$index}}</td>
                                 <td>{{item.name}}</td>
+                                <td></td>
                                 <td>{{item.qty}}</td>
                                 <td>{{item.price}}</td>
                                 <td>{{item.price * item.qty}}</td>
@@ -106,10 +109,25 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="3" class="text-right">Total:</td>
-                                <td class="text-right">
-                                    {{total() | currency}}
-                                </td><td></td><td></td>
+                                <td ng-show="cart.client">You have {{cart.client.points}} point(s) left</td>
+                                <td ng-show="cart.client">
+                                    <button ng-click="countPoints = !countPoints" ng-hide="countPoints" class="btn  btn-primary">Use it</button>
+                                    <button ng-click="countPoints = !countPoints" ng-show="countPoints"
+                                            class="btn  btn-warning">cancel</button></td>
+                                <td class="text-right" id="shoppingCardDiscount">
+                                    <label>Discount: </label> <input type="text" ng-model="manualDiscountInput" />
+                                </td>
+                                <td colspan="3"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-right">
+                                    <div class="row">Sub Total:{{ subTotal() | currency}}</div>
+                                    <div class="row">Groom Points:{{calcPoints() | currency}}</div>
+                                    <div class="row">Other discounts:{{ manualDiscount() | currency}}</div>
+                                    <div class="row">Total: {{total() | currency}}</div>
+
+
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
@@ -121,11 +139,15 @@
                         <option value="cash">Cash</option>
                     </select>
                 </div>
-                <div>
-                    <button ng-click="saveSale()" id="saveSaleButton"
-                            class="btn btn-sm btn-success">Record purchase </button>
-                </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div ng-click="saveSale()" id="shoppingCartDoneButton"
+                     class="btn btn-lg btn-success rotate">DONE</div>
+            </div>
+
+        </div>
+
     </div>
 </div>

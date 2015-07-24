@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.report', ['ngRoute','myApp.constants'])
+angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/report', {
                     templateUrl: 'pages/5.viewReport/report.html',
                     controller: 'ReportController',
@@ -21,6 +21,7 @@ angular.module('myApp.report', ['ngRoute','myApp.constants'])
 
                 $scope.resetVars();
                 $scope.checkUsers();
+                $scope.checkStaffList();
                 $scope.checkPurchases().then(
                         function () {
                             $scope.calcStats($scope.visits);
@@ -64,6 +65,23 @@ angular.module('myApp.report', ['ngRoute','myApp.constants'])
                         }
                         if ($scope.haircutsByUser.length > 0) {
                             $scope.calcStats($scope.haircutsByUser);
+                        } else {
+                            $scope.resetVars();
+                        }
+                    } else {
+                        $scope.calcStats($scope.visits);
+                    }
+                }
+            };
+            $scope.barberChange = function () {
+                $scope.haircutsByBarber = [];
+                for (var i = 0, l = $scope.visits.length; i < l; i++) {
+                    if ($scope.selectedBarber) {
+                        if ($scope.visits[i].barber === $scope.selectedBarber) {
+                            $scope.haircutsByBarber.push($scope.visits[i]);
+                        }
+                        if ($scope.haircutsByBarber.length > 0) {
+                            $scope.calcStats($scope.haircutsByBarber);
                         } else {
                             $scope.resetVars();
                         }

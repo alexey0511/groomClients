@@ -1,6 +1,4 @@
 'use strict';
-
-
 // Declare app level module which depends on views, and components
 angular.module('myApp', [
     'ngRoute',
@@ -31,7 +29,6 @@ angular.module('myApp', [
                 ]);
                 $httpProvider.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
                 delete $httpProvider.defaults.headers.common['X-Requested-With'];
-
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
         .controller('ApplicationController', function ($scope, AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions, clientsService, $http, $q, Session, USER_ROLES, AuthService, $rootScope, $cookieStore, $location) {
@@ -39,7 +36,6 @@ angular.module('myApp', [
                 $scope.alerts = [];
                 $scope.clientList = [];
                 $scope.currentUser = null;
-
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
                 };
@@ -55,7 +51,6 @@ angular.module('myApp', [
                     $scope.currentUser = null;
                 });
             };
-
             $scope.findClient = function (id) {
                 for (var i = 0, listLength = $scope.clientList.length; i < listLength; i++) {
                     if (typeof $scope.clientList[i].id === 'undefined') {
@@ -158,7 +153,6 @@ angular.module('myApp', [
                 }
                 return defer.promise;
             };
-
             $scope.recordVisit = function (visit) {
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
                 $scope.increaseCount(clientIndex);
@@ -436,6 +430,14 @@ angular.module('myApp', [
                         }
                     }
                     return false;
+                },
+                getAnonymousClient: function (clientList) {
+                    for (var i = 0, l = clientList.length; i < l; i++) {
+                        if ('Casual Customer' === clientList[i].name) {
+                            return clientList[i];
+                        }
+                    }
+                    return false;
                 }
             };
         })
@@ -464,8 +466,6 @@ angular.module('myApp', [
                     }
                 });
             }]);
-
-
 angular.module('myApp.constants', [])
         .constant("DEFAULT_SETTINGS", {
             numberVisits: 6,
