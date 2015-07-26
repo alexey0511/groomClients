@@ -52,14 +52,13 @@ var dbService = (function (appConfig) {
     function sendRequest(endpoint, method, data, success) {
         var querystring = require('querystring');
         var https = require('https');
-
+        var i = 0;
         var host = 'api.mongolab.com';
 
         var dataString = JSON.stringify(data);
         var headers = {};
         if (method === 'GET') {
             if (data !== {}) {
-                console.log(data);
                 endpoint += '?' + querystring.stringify(data);
             }
         }

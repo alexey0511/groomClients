@@ -35,6 +35,10 @@ app.use('/api', expressJwt({secret: secret}));
 app.use(function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
         res.send(401, {error: 'invalid token...'});
+    } else {
+        console.log(err.name);
+        res.send(403, {error: 'unauthorised access'});
+        
     }
 });
 app.use('/api', apiRoute);

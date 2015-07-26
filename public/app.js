@@ -32,6 +32,14 @@ angular.module('myApp', [
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
         .controller('ApplicationController', function ($scope, AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions, clientsService, $http, $q, Session, USER_ROLES, AuthService, $rootScope, $cookieStore, $location) {
+            $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
+                $scope.logout();
+                $location.path('/login');
+            });
+            $rootScope.$on(AUTH_EVENTS.notAuthorized, function () {
+                $scope.logout();
+                $location.path('/login');
+            });
             $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
@@ -47,9 +55,7 @@ angular.module('myApp', [
                 if ($cookieStore.get('userInfo')) {
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
-                $scope.$on(AUTH_EVENTS.notAuthenticated, function () {
-                    $scope.currentUser = null;
-                });
+
             };
             $scope.findClient = function (id) {
                 for (var i = 0, listLength = $scope.clientList.length; i < listLength; i++) {
@@ -149,7 +155,6 @@ angular.module('myApp', [
                                 defer.resolve();
                             })
                             .error(function () {
-                                alert("can't connect to database")
                                 defer.reject();
                             });
                 }
@@ -248,6 +253,10 @@ angular.module('myApp', [
                     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                             s4() + '-' + s4() + s4() + s4();
                 },
+                makeSaleSound: function () {
+                    var snd = new Audio("./img/sale.wav"); // buffers automatically when created
+                    snd.play();
+                },
                 confirmDialog: function () {
                     var defer = $q.defer();
                     var modalInstance = $modal.open({
@@ -300,6 +309,27 @@ angular.module('myApp', [
                 }
             };
         })
+        .directive('focusMe', function ($timeout, $parse) {
+            return {
+                //scope: true,   // optionally create a child scope
+                link: function (scope, element, attrs) {
+                    var model = $parse(attrs.focusMe);
+                    scope.$watch(model, function (value) {
+                        if (value === true) {
+                            $timeout(function () {
+                                element[0].focus();
+                            });
+                        }
+                    });
+                    // to address @blesh's comment, set attribute value to 'false'
+                    // on blur event:
+                    element.bind('blur', function () {
+                        console.log('blur');
+                        scope.$apply(model.assign(scope, false));
+                    });
+                }
+            };
+        })
         .directive('capitalizeFirst', function ($parse) {
             return {
                 require: 'ngModel',
@@ -338,6 +368,7 @@ angular.module('myApp', [
                         440: AUTH_EVENTS.sessionTimeout
                     }[response.status], response);
                     return $q.reject(response);
+
                     if (response.status === 401) {
                         $location.path('/login');
                     }
@@ -345,7 +376,7 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('AuthService', function ($http, Session, $cookieStore) {
+        .factory('AuthService', function ($http, Session, $cookieStore, $rootScope, AUTH_EVENTS) {
             var authService = {};
             authService.login = function (credentials) {
                 return $http
@@ -356,6 +387,7 @@ angular.module('myApp', [
                                     : $cookieStore.remove('userToken');
                             return true;
                         }, function (res) {
+                            $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
                             $cookieStore.remove('userToken');
                             return false;
                         });
@@ -447,9 +479,6 @@ angular.module('myApp', [
         .run(['$rootScope', 'AUTH_EVENTS', 'AuthService', '$location',
             function ($rootScope, AUTH_EVENTS, AuthService, $location) {
 
-                $rootScope.$on(AUTH_EVENTS.loginFailed, function () {
-                    console.log("App Run rootscope: login failed");
-                });
                 $rootScope.$on('$routeChangeStart', function (event, next) {
                     // redirect to login page if not logged in
                     if (next.data && next.data.authorizedRoles) {

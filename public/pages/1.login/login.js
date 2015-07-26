@@ -8,6 +8,10 @@ angular.module('myApp.Authentication', ['myApp.constants'])
                 });
             }])
         .controller('LoginController', function ($scope, $http, $rootScope, AUTH_EVENTS, AuthService, $location) {
+            $rootScope.$on(AUTH_EVENTS.loginFailed, function () {
+                $scope.alerts.push({type: 'danger', msg: "Username or password are incorrect"});
+            });
+
             $scope.credentials = {
                 username: '',
                 password: ''
@@ -25,9 +29,6 @@ angular.module('myApp.Authentication', ['myApp.constants'])
                         });
                     }
                 }, function () {
-                    $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
-                    $scope.alerts.push({type: 'danger', msg: "Username or password are incorrect"});
-
                 });
             };
         })

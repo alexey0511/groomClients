@@ -16,22 +16,45 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             }])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
             $scope.init = function () {
-                
                 $scope.showNewClient = false;
                 $scope.shoppingCartPoints = 0;
                 $scope.manualDiscountInput = 0;
-                $scope.barberActive = 'Muniah';
+                $scope.newClient = {
+                    firstName: '',
+                    lastName: ''
+                };
+                $scope.nameFilter = {
+                    name: '',
+                    phone: ''
+                };
                 $scope.countPoints = false;
                 $scope.resetCart();
                 $scope.checkUsers();
-                $scope.checkStaffList();
+                $scope.checkStaffList().then(function () {
+                    $scope.barberActive = $scope.staffList[0].name;
+                });
                 $scope.checkClients().then(function () {
                     $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
+                    $scope.clientActive = $scope.anonymousClient;
                 });
-                $scope.checkProducts();
+                $scope.checkProducts().then(function () {
+                    $scope.productActive = $scope.products[0];
+                });
                 $scope.cartProducts = cartService.getProducts();
                 $scope.cartServices = cartService.getServices();
             };
+            $scope.clientSearch = function (client) {
+                if (client.name && $scope.nameFilter.name !== '' && (client.name.toLowerCase().indexOf($scope.nameFilter.name.toLowerCase())) > -1) {
+                    return client;
+                }
+                if (client.phone && $scope.nameFilter.phone !== '' && client.phone.indexOf($scope.nameFilter.phone) > -1) {
+                    return client;
+                }
+                if ($scope.nameFilter.name === '' && $scope.nameFilter.phone === '') {
+                    return client;
+                }
+            };
+
             $scope.resetCart = function () {
                 $scope.cartProducts = [];
                 $scope.cartServices = [];
@@ -41,6 +64,34 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     services: [],
                     payment: 'eftpos'
                 };
+            };
+            $scope.toggleShowNewClient = function () {
+                $scope.showNewClient = !$scope.showNewClient;
+            };
+            $scope.makeProductActive = function (product) {
+                $scope.productActive = product;
+            };
+            $scope.checkProductActive = function (productId) {
+                if (productId === $scope.productActive.id) {
+                    return 'btn-warning';
+                } else {
+                    return 'btn-primary';
+                }
+            };
+            $scope.makeClientActive = function (id) {
+                for (var i = 0, l = $scope.clientList.length; i < l; i++) {
+                    if (id === $scope.clientList[i].id) {
+                        $scope.clientActive = $scope.clientList[i];
+                    }
+                }
+                $scope.nameFilter.name = $scope.clientActive.name;
+            };
+            $scope.checkClientActive = function (clientId) {
+                if (clientId === $scope.clientActive.id) {
+                    return 'btn-warning';
+                } else {
+                    return 'btn-primary';
+                }
             };
             $scope.makeBarberActive = function (id) {
                 for (var i = 0; i < $scope.staffList.length; i++) {
@@ -55,14 +106,16 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 } else {
                     return 'btn-primary';
                 }
-            }
-            $scope.addProduct = function (id, item, barber) {
-                if (item.type === 'service') {
+            };
+            $scope.addToCart = function () {
+                $scope.cart.barber = $scope.barberActive;
+                $scope.cart.client = $scope.clientActive;
+                if ($scope.productActive.type === 'service') {
                     $scope.cartServices = cartService.getServices();
-                    cartService.addService(id, item.name, item.price, barber);
+                    cartService.addService($scope.productActive.id, $scope.productActive.name, $scope.productActive.price, $scope.barberActive);
                 } else {
                     $scope.cartProducts = cartService.getProducts();
-                    cartService.addProduct(id, item.name, item.price);
+                    cartService.addProduct($scope.productActive.id, $scope.productActive.name, $scope.productActive.price);
                 }
             };
             $scope.remove = function (id) {
@@ -115,25 +168,18 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cart.price = $scope.total;
                 return total;
             };
-            $scope.addBarber = function (barber) {
-                $scope.barberActive = barber;
-            };
-            $scope.addClient = function (person, newClient) {
-                if (newClient === true) {
-                    $scope.createClient(person).then(
-                            function () {
-                                $scope.cart.client = person;
-                            },
-                            function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
-                            });
-                } else {
-                    if (person) {
-                        $scope.cart.client = person;
-                    } else {
-                        $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the client"});
-                    }
-                }
+            $scope.addClientAndMakeActive = function () {
+                $scope.createClient($scope.newClient).then(
+                        function (createdClient) {
+                            $scope.makeClientActive(createdClient.id);
+                            $scope.toggleShowNewClient();
+                            $scope.newClient = {};
+                        },
+                        function () {
+                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
+                        }, function () {
+                    console.log("error");
+                });
             };
             $scope.createClient = function (person) {
                 var defer = $q.defer();
@@ -154,17 +200,19 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 };
                 $http.post("/api/clients", person)
                         .then(
-                                function (clientRecord) {
-                                    $scope.clientList.push(clientRecord);
-                                    defer.resolve(person);
+                                function (response) {
+                                    $scope.clientList.push(response.data);
+                                    defer.resolve(response.data);
                                 },
                                 function () {
                                     $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
                                 });
+
+                return defer.promise;
             };
             $scope.saveSale = function () {
                 if (!$scope.cart.client) {
-                    alert("Please select a client");
+                    commonFunctions.customAlert("Please select a client");
                     return;
                 }
                 if (!$scope.cart.barber) {
@@ -196,12 +244,14 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     $scope.cart.client.points -= $scope.shoppingCartPoints;
                     $http.post('/orders', $scope.cart).then(function () {
                         $http.post('/clients', $scope.cart.client).then(function () {
+                            commonFunctions.makeSaleSound();
                             commonFunctions.customAlert("Thank you");
                         }, function () {
                         });
                     }, function () {
                     });
                 } else {
+                    commonFunctions.makeSaleSound();
                     commonFunctions.customAlert("Thank you");
                 }
                 $scope.resetCart();
