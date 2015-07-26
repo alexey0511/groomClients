@@ -253,6 +253,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 } else {
                     commonFunctions.makeSaleSound();
                     commonFunctions.customAlert("Thank you");
+                    $scope.nameFilter = {
+                        name:'',
+                        phone:''
+                    }
                 }
                 $scope.resetCart();
                 cartService.reset();
