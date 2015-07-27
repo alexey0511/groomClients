@@ -18,7 +18,6 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.init = function () {
                 $scope.showNewClient = false;
                 $scope.countPoints = false;
-                $scope.shoppingCartPoints = 0;
                 $scope.manualDiscountInput = 0;
                 $scope.barberActive = {};
                 $scope.productActive = {};
@@ -63,9 +62,18 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     client: null,
                     products: [],
                     services: [],
-                    payment: 'eftpos'
+                    payment: 'eftpos',
+                    barber: '',
+                    location: '',
+                    date: '',
+                    subtotal: 0,
+                    points: 0,
+                    discount: 0,
+                    total: 0
+
                 };
                 $scope.countPoints = false;
+
             };
             $scope.toggleShowNewClient = function () {
                 $scope.showNewClient = !$scope.showNewClient;
@@ -117,32 +125,33 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 cartService.removeProductService(id);
             };
             $scope.subTotal = function () {
-                var subTotal = 0;
+                $scope.cart.subTotal = 0;
                 for (var i = 0; i < $scope.cartProducts.length; i++) {
-                    subTotal += ($scope.cartProducts[i].price * $scope.cartProducts[i].qty);
+                    $scope.cart.subTotal += ($scope.cartProducts[i].price * $scope.cartProducts[i].qty);
                 }
                 for (var i = 0; i < $scope.cartServices.length; i++) {
-                    subTotal += ($scope.cartServices[i].price * $scope.cartServices[i].qty);
+                    $scope.cart.subTotal += ($scope.cartServices[i].price * $scope.cartServices[i].qty);
                 }
-                return subTotal;
+                return $scope.cart.subTotal;
             };
             $scope.toggleCountPoints = function () {
                 $scope.countPoints = !$scope.countPoints;
             };
             $scope.calcPoints = function () {
-                var points = 0;
+                $scope.cart.points = 0;
+
                 if ($scope.countPoints) {
                     if ($scope.cart.client) {
                         if ($scope.cart.client.points > $scope.subTotal()) {
-                            points = $scope.subTotal();
+                            $scope.cart.points = $scope.subTotal();
                         } else {
-                            points = $scope.cart.client.points;
+                            $scope.cart.points = $scope.cart.client.points;
                         }
                     }
                 } else {
-                    points = 0;
+                    $scope.cart.points = 0;
                 }
-                return points;
+                return $scope.cart.points;
             };
             $scope.manualDiscount = function () {
                 var manualDiscount = 0;
@@ -161,10 +170,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 return manualDiscount;
             };
             $scope.total = function () {
-                var total = 0;
-                total = $scope.subTotal() - $scope.calcPoints() - $scope.manualDiscount();
-                $scope.cart.price = $scope.total;
-                return total;
+                $scope.cart.total = 0;
+                $scope.cart.total = $scope.subTotal() - $scope.calcPoints() - $scope.manualDiscount();
+                return $scope.cart.total;
             };
             $scope.addClientAndMakeActive = function () {
                 $scope.createClient($scope.newClient).then(
@@ -227,6 +235,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cart.services = $scope.cartServices;
                 $scope.cart.location = $scope.currentUser;
                 $scope.cart.date = new Date();
+
+                $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
+                        -= $scope.cart.points;
                 for (var i = 0, l = $scope.cart.services.length; i < l; i++) {
                     for (var j = 0; j < $scope.cart.services[i].qty; j++) {
                         var visit = {
@@ -239,27 +250,32 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                         $scope.recordVisit(visit);
                     }
                 }
-                if ($scope.countPoints) {
-                    $scope.cart.client.points -= $scope.shoppingCartPoints;
-                }
-                $http.post('/api/orders', $scope.cart).then(function () {
-                    $http.post('/api/clients', $scope.cart.client).then(function () {
-                        commonFunctions.makeSaleSound();
-                        commonFunctions.customAlert("Thank you");
 
-                        // refresh local array
-                        var clientIndex = clientsService.findClientIndex($scope.cart.client.id, $scope.clientList);
-                        $scope.clientList[clientIndex].points = $scope.cart.client.points;
+                var cartCached = $scope.cart;
 
-
-                        //refresh data
-                        $scope.resetNameFilter();
-                        $scope.resetCart();
-                        cartService.reset();
+                $http.post('/api/orders', $scope.cart).then(function (response) {
+                    var clientIndex = clientsService.findClientIndex(response.data.client.id, $scope.clientList);
+                    $scope.clientList[clientIndex].points += Math.round(response.data.total * 10000 / 1000) / 100;
+                    clientsService.saveClient($scope.clientList[clientIndex], $scope.clientList).then(function () {
                     }, function () {
+                        // restore data (because it's changing on a client without waiting for response)
+                        $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
+                                += $scope.cartCached.points;
+                        $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
                     });
                 }, function () {
+                    // restore cart data
+                    $scope.cart = cartCached;
+                    $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
                 });
+                commonFunctions.makeSaleSound();
+                commonFunctions.customAlert("Thank you");
+
+                //refresh data
+                $scope.resetNameFilter();
+                $scope.resetCart();
+                cartService.reset();
+
             };
             $scope.resetNameFilter = function () {
                 $scope.nameFilter = {

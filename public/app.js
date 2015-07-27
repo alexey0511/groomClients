@@ -163,14 +163,12 @@ angular.module('myApp', [
             $scope.recordVisit = function (visit) {
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
                 $scope.increaseCount(clientIndex);
-                $scope.clientList[clientIndex].points += visit.price * 100 / 1000;
 // redeem right away - use half price haircut
                 if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
                     $scope.clientList[clientIndex].counters.freeVisits += 1;
                     // Invoking immediatelly for now. ToDo: implement invoke on button click;
                     $scope.redeemCoupon(clientIndex);
-                    visit.price = Number(visit.price) * 100 / 2 / 100;
-                    $scope.clientList[clientIndex].points -= visit.price;
+                    visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
                 }
                 if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
                     $scope.clientList[clientIndex].new = false;
@@ -324,7 +322,6 @@ angular.module('myApp', [
                     // to address @blesh's comment, set attribute value to 'false'
                     // on blur event:
                     element.bind('blur', function () {
-                        console.log('blur');
                         scope.$apply(model.assign(scope, false));
                     });
                 }
@@ -436,7 +433,7 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('clientsService', function clientsService($http) {
+        .factory('clientsService', function clientsService($http, $q) {
             return {
                 lastVisitInAnHour: function (client) {
                     if (new Date(client.lastVisit).getFullYear() === new Date().getFullYear()
@@ -456,6 +453,31 @@ angular.module('myApp', [
                         }
                     }
                     return false;
+                },
+                getClientById: function (id, clientList) {
+                    for (var i = 0, l = clientList.length; i < l; i++) {
+                        if (id === clientList[i].id) {
+                            return clientList[i];
+                        }
+                    }
+                    return false;
+
+                },
+                saveClient: function (client, clientList) {
+                    var defer = $q.defer();
+                    for (var i = 0, l = clientList.length; i < l; i++) {
+                        if (client.id === clientList[i].id) {
+                            clientList[i] = client;
+                            $http.post('/api/clients', client).then(function () {
+                                defer.resolve(client);
+                            }, function () {
+                                defer.reject();
+                            });
+                        }
+                        return defer.promise;
+                    }
+                    return false;
+
                 },
                 findClientIndex: function (id, clientList) {
                     for (var i = 0, l = clientList.length; i < l; i++) {
