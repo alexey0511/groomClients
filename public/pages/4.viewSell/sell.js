@@ -20,6 +20,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.countPoints = false;
                 $scope.shoppingCartPoints = 0;
                 $scope.manualDiscountInput = 0;
+                $scope.barberActive = {};
+                $scope.productActive = {};
+                $scope.clientActive = {};
                 $scope.newClient = {
                     firstName: '',
                     lastName: ''
@@ -93,7 +96,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.barberActive = barber;
             };
             $scope.checkActiveBarber = function (barberId) {
-                if (barberId === $scope.barberActive.id) {
+                if ($scope.barberActive && barberId === $scope.barberActive.id) {
                     return 'btn-warning';
                 } else {
                     return 'btn-primary';
@@ -204,7 +207,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 } else {
                     defer.reject();
                 }
-                    return defer.promise;
+                return defer.promise;
             };
             $scope.saveSale = function () {
                 if (!$scope.cart.client) {
