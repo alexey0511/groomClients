@@ -17,21 +17,18 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
             $scope.init = function () {
                 $scope.showNewClient = false;
+                $scope.countPoints = false;
                 $scope.shoppingCartPoints = 0;
                 $scope.manualDiscountInput = 0;
                 $scope.newClient = {
                     firstName: '',
                     lastName: ''
                 };
-                $scope.nameFilter = {
-                    name: '',
-                    phone: ''
-                };
-                $scope.countPoints = false;
+                $scope.resetNameFilter();
                 $scope.resetCart();
                 $scope.checkUsers();
                 $scope.checkStaffList().then(function () {
-                    $scope.barberActive = $scope.staffList[0].name;
+                    $scope.barberActive = $scope.staffList[0];
                 });
                 $scope.checkClients().then(function () {
                     $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
@@ -43,6 +40,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cartProducts = cartService.getProducts();
                 $scope.cartServices = cartService.getServices();
             };
+
             $scope.clientSearch = function (client) {
                 if (client.name && $scope.nameFilter.name !== '' && (client.name.toLowerCase().indexOf($scope.nameFilter.name.toLowerCase())) > -1) {
                     return client;
@@ -64,10 +62,12 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     services: [],
                     payment: 'eftpos'
                 };
+                $scope.countPoints = false;
             };
             $scope.toggleShowNewClient = function () {
                 $scope.showNewClient = !$scope.showNewClient;
             };
+
             $scope.makeProductActive = function (product) {
                 $scope.productActive = product;
             };
@@ -78,12 +78,8 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     return 'btn-primary';
                 }
             };
-            $scope.makeClientActive = function (id) {
-                for (var i = 0, l = $scope.clientList.length; i < l; i++) {
-                    if (id === $scope.clientList[i].id) {
-                        $scope.clientActive = $scope.clientList[i];
-                    }
-                }
+            $scope.makeClientActive = function (client) {
+                $scope.clientActive = client;
                 $scope.nameFilter.name = $scope.clientActive.name;
             };
             $scope.checkClientActive = function (clientId) {
@@ -93,15 +89,11 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     return 'btn-primary';
                 }
             };
-            $scope.makeBarberActive = function (id) {
-                for (var i = 0; i < $scope.staffList.length; i++) {
-                    if (id === $scope.staffList[i].id) {
-                        $scope.barberActive = $scope.staffList[i].name;
-                    }
-                }
+            $scope.makeBarberActive = function (barber) {
+                $scope.barberActive = barber;
             };
-            $scope.checkActiveBarber = function (barber) {
-                if (barber === $scope.barberActive) {
+            $scope.checkActiveBarber = function (barberId) {
+                if (barberId === $scope.barberActive.id) {
                     return 'btn-warning';
                 } else {
                     return 'btn-primary';
@@ -130,6 +122,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     subTotal += ($scope.cartServices[i].price * $scope.cartServices[i].qty);
                 }
                 return subTotal;
+            };
+            $scope.toggleCountPoints = function () {
+                $scope.countPoints = !$scope.countPoints;
             };
             $scope.calcPoints = function () {
                 var points = 0;
@@ -171,44 +166,45 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.addClientAndMakeActive = function () {
                 $scope.createClient($scope.newClient).then(
                         function (createdClient) {
-                            $scope.makeClientActive(createdClient.id);
+                            $scope.makeClientActive(createdClient);
                             $scope.toggleShowNewClient();
                             $scope.newClient = {};
                         },
                         function () {
                             $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
-                        }, function () {
-                    console.log("error");
-                });
+                        });
             };
             $scope.createClient = function (person) {
                 var defer = $q.defer();
-                person = {
-                    "firstName": person.firstName,
-                    "lastName": person.lastName,
-                    "id": commonFunctions.generateGuid(),
-                    "name": person.firstName + " " + person.lastName,
-                    "counters": {
-                        "progress": 0,
-                        "visits": 0,
-                        "freeVisits": 0
-                    },
-                    visits: [],
-                    points: 0,
-                    "createdOn": new Date(),
-                    "new": true
-                };
-                $http.post("/api/clients", person)
-                        .then(
-                                function (response) {
-                                    $scope.clientList.push(response.data);
-                                    defer.resolve(response.data);
-                                },
-                                function () {
-                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
-                                });
-
-                return defer.promise;
+                if (person.firstName || person.lastName) {
+                    person = {
+                        "firstName": person.firstName,
+                        "lastName": person.lastName,
+                        "id": commonFunctions.generateGuid(),
+                        "name": person.firstName + " " + person.lastName,
+                        "counters": {
+                            "progress": 0,
+                            "visits": 0,
+                            "freeVisits": 0
+                        },
+                        visits: [],
+                        points: 0,
+                        "createdOn": new Date(),
+                        "new": true
+                    };
+                    $http.post("/api/clients", person)
+                            .then(
+                                    function (response) {
+                                        $scope.clientList.push(response.data);
+                                        defer.resolve(response.data);
+                                    },
+                                    function () {
+                                        $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
+                                    });
+                } else {
+                    defer.reject();
+                }
+                    return defer.promise;
             };
             $scope.saveSale = function () {
                 if (!$scope.cart.client) {
@@ -242,25 +238,33 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 }
                 if ($scope.countPoints) {
                     $scope.cart.client.points -= $scope.shoppingCartPoints;
-                    $http.post('/orders', $scope.cart).then(function () {
-                        $http.post('/clients', $scope.cart.client).then(function () {
-                            commonFunctions.makeSaleSound();
-                            commonFunctions.customAlert("Thank you");
-                        }, function () {
-                        });
+                }
+                $http.post('/api/orders', $scope.cart).then(function () {
+                    $http.post('/api/clients', $scope.cart.client).then(function () {
+                        commonFunctions.makeSaleSound();
+                        commonFunctions.customAlert("Thank you");
+
+                        // refresh local array
+                        var clientIndex = clientsService.findClientIndex($scope.cart.client.id, $scope.clientList);
+                        $scope.clientList[clientIndex].points = $scope.cart.client.points;
+
+
+                        //refresh data
+                        $scope.resetNameFilter();
+                        $scope.resetCart();
+                        cartService.reset();
                     }, function () {
                     });
-                } else {
-                    commonFunctions.makeSaleSound();
-                    commonFunctions.customAlert("Thank you");
-                    $scope.nameFilter = {
-                        name:'',
-                        phone:''
-                    }
-                }
-                $scope.resetCart();
-                cartService.reset();
+                }, function () {
+                });
             };
+            $scope.resetNameFilter = function () {
+                $scope.nameFilter = {
+                    name: '',
+                    phone: ''
+                };
+            };
+
             $scope.init();
         })
         .factory("cartService", function () {
