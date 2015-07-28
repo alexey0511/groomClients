@@ -18,7 +18,6 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.init = function () {
                 $scope.showNewClient = false;
                 $scope.countPoints = false;
-                $scope.manualDiscountInput = 0;
                 $scope.barberActive = {};
                 $scope.productActive = {};
                 $scope.clientActive = {};
@@ -113,6 +112,8 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.addToCart = function () {
                 $scope.cart.barber = $scope.barberActive;
                 $scope.cart.client = $scope.clientActive;
+                
+                
                 if ($scope.productActive.type === 'service') {
                     $scope.cartServices = cartService.getServices();
                     cartService.addService($scope.productActive.id, $scope.productActive.name, $scope.productActive.price, $scope.barberActive);
@@ -139,7 +140,6 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             };
             $scope.calcPoints = function () {
                 $scope.cart.points = 0;
-
                 if ($scope.countPoints) {
                     if ($scope.cart.client) {
                         if ($scope.cart.client.points > $scope.subTotal()) {
@@ -154,24 +154,21 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 return $scope.cart.points;
             };
             $scope.manualDiscount = function () {
-                var manualDiscount = 0;
-                if ($scope.manualDiscountInput) {
-                    if (isNaN(Number($scope.manualDiscountInput))) {
-                        manualDiscount = 0;
+                if ($scope.cart.discount) {
+                    if (isNaN(Number($scope.cart.discount))) {
+                        $scope.cart.discount = 0;
                     }
-                    if (Number($scope.manualDiscountInput) >= ($scope.subTotal() - $scope.calcPoints())) {
-                        manualDiscount = ($scope.subTotal() - $scope.calcPoints());
-                    } else {
-                        manualDiscount = $scope.manualDiscountInput;
+                    if (Number($scope.cart.discount) >= ($scope.subTotal() - $scope.calcPoints())) {
+                        $scope.cart.discount = ($scope.subTotal() - $scope.calcPoints());
                     }
                 } else {
-                    manualDiscount = 0;
+                    $scope.cart.discount = 0;
                 }
-                return manualDiscount;
+                return $scope.cart.discount;
             };
             $scope.total = function () {
                 $scope.cart.total = 0;
-                $scope.cart.total = $scope.subTotal() - $scope.calcPoints() - $scope.manualDiscount();
+                $scope.cart.total = $scope.subTotal() - $scope.calcPoints() - $scope.manualDiscount($scope.manualDiscountInput);
                 return $scope.cart.total;
             };
             $scope.addClientAndMakeActive = function () {
@@ -255,7 +252,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
 
                 $http.post('/api/orders', $scope.cart).then(function (response) {
                     var clientIndex = clientsService.findClientIndex(response.data.client.id, $scope.clientList);
-                    $scope.clientList[clientIndex].points += Math.round(response.data.total * 10000 / 1000) / 100;
+                    if (response.data.client.name !== "Casual Customer") {
+                        $scope.clientList[clientIndex].points += Math.round(response.data.total * 10000 / 1000) / 100;
+                    }
                     clientsService.saveClient($scope.clientList[clientIndex], $scope.clientList).then(function () {
                     }, function () {
                         // restore data (because it's changing on a client without waiting for response)
@@ -328,19 +327,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     return cartProducts;
                 },
                 addService: function (id, name, price, barber) {
-                    var addedToExistingItem = false;
-                    for (var i = 0; i < cartServices.length; i++) {
-                        if (cartServices[i].id === id) {
-                            cartServices[i].qty++;
-                            addedToExistingItem = true;
-                            break;
-                        }
-                    }
-                    if (!addedToExistingItem) {
-                        cartServices.push({
-                            qty: 1, id: id, price: price, name: name, barber: barber
-                        });
-                    }
+                    cartServices.push({
+                        qty: 1, id: id, price: price, name: name, barber: barber
+                    });
                 },
                 getServices: function () {
                     return cartServices;

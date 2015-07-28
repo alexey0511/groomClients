@@ -1,4 +1,4 @@
-<div ng-if="currentUser">
+<div>
     <div>
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
     </div>
@@ -54,6 +54,7 @@
                     <div class="row" style="height:50px; margin:5px;" ng-hide="showNewClient" ng-click="makeClientActive(person)" ng-class="checkClientActive(person.id)" ng-repeat="person in clientList| filter:clientSearch track by $index" >
                         <div class="col-md-6"> {{person.firstName}} {{person.lastName}}</div>
                         <div class="col-md-6"> {{person.phone}}</div>
+                        <div class="col-md-12" >Haircuts: {{person.counters.progress}} <span ng-if="person.counters.progress == 5" style="background-color: red;color:white;font-weight: bold;padding:5px;">HALF PRICE</span></div>
                     </div>
                     <div class="row" ng-show="showNewClient">
                         <div class="col-md-6"><input capitalize-first name="firstName" placeholder="First name" ng-model="newClient.firstName"></div>
@@ -110,24 +111,23 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td ng-show="cart.client">You have {{cart.client.points}} point(s) left</td>
-                                <td ng-show="cart.client">
+                                <td ng-show="cart.client && cart.client && cart.client.name !== 'Casual Customer'">Points: {{cart.client.points}}</td>
+                                <td ng-show="cart.client && cart.client.name !== 'Casual Customer'">
                                     <button ng-click="toggleCountPoints()" ng-hide="countPoints" class="btn  btn-primary">Use it</button>
                                     <button ng-click="toggleCountPoints()" ng-show="countPoints"
                                             class="btn  btn-warning">cancel</button></td>
                                 <td class="text-right" id="shoppingCardDiscount">
-                                    <label>Discount: </label> <input type="text" ng-model="manualDiscountInput" />
+                                    <label>Discount: </label> 
+                                    <input type="text" ng-model="cart.discount" />
                                 </td>
-                                <td colspan="3"></td>
+                                <td colspan="4"></td>
                             </tr>
                             <tr>
-                                <td colspan="6" class="text-right">
+                                <td colspan="7" class="text-right">
                                     <div class="row">Sub Total:{{ subTotal() | currency}}</div>
                                     <div class="row">Groom Points:{{calcPoints() | currency}}</div>
                                     <div class="row">Other discounts:{{ manualDiscount() | currency}}</div>
                                     <div class="row">Total: {{total() | currency}}</div>
-
-
                                 </td>
                             </tr>
                         </tfoot>
