@@ -16,14 +16,15 @@ angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
                 });
             }])
         .controller('NewClientController', function ($scope, $location, commonFunctions, $http, DEFAULT_SETTINGS) {
-
-            $scope.patterns = {};
-            $scope.patterns.phone = new RegExp('^(64)');
-            $scope.newClientMaster = {
-                firstName: '',
-                lastName: ''
+            $scope.init = function () {
+                $scope.patterns = {};
+                $scope.patterns.phone = new RegExp('^(64)');
+                $scope.newClientMaster = {
+                    firstName: '',
+                    lastName: ''
+                };
+                $scope.newClient = angular.copy($scope.newClientMaster);
             };
-            $scope.newClient = angular.copy($scope.newClientMaster);
             $scope.addNewClient = function () {
                 $scope.newClient.id = commonFunctions.generateGuid();
                 $scope.newClient.name = $scope.newClient.firstName + " " + $scope.newClient.lastName;
@@ -37,26 +38,19 @@ angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
                 $scope.newClient.visits = [];
                 $scope.newClient.points = 0;
                 // save to DB
-                console.log("NEW", $scope.newClient);
-                var visit = {
-                    barber: $scope.currentUser.user,
-                    client: $scope.newClient,
-                    price: DEFAULT_SETTINGS.defaultPrice,
-                    date: new Date(),
-                    new : true
-                };
                 $http.post("/api/clients", $scope.newClient)
                         .success(function (clientRecord) {
                             $scope.clientList.push(clientRecord);
-                            $scope.recordVisit(visit);
-                            $scope.resetNewClientForm();
                             commonFunctions.customAlert("Thank you for visiting Groom Barbers")
+                            $scope.resetNewClientForm();
 
                         });
             };
             $scope.resetNewClientForm = function () {
                 $scope.newClient = angular.copy($scope.newClientMaster);
             };
+
+            $scope.init();
         })
         .directive('newClientDialog', function (AUTH_EVENTS) {
             return {
@@ -70,4 +64,4 @@ angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
                     scope.visible = false;
                 }
             };
-        })
+        });

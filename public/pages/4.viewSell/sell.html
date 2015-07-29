@@ -43,18 +43,23 @@
                         <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="toggleShowNewClient()">NEW CLIENT</button>
                         <button ng-hide="showNewClient" style="width:49%;" id="sellFormShowButton" class="btn btn-primary" ng-click="makeClientActive(anonymousClient)">CASUAL</button>
                     </div>
-                    <div class="row" id='ClientsTableMain'>
+                    <div class="row" id='ClientsTableMain' ng-hide="showNewClient">
                         <div class="col-md-6">Name</div>
-                        <div class="col-md-6">Phone</div>
+                        <div class="col-md-1"></div>
+                        <div class="col-md-5">Phone</div>
                     </div>
                     <div class="row" ng-hide="showNewClient">
-                        <div class="col-md-6"><input type="text" ng-model="nameFilter.name" placeholder="Name"/></div>
-                        <div class="col-md-6"><input type="text" ng-model="nameFilter.phone" placeholder="Phone"/></div>
+                        <div class="col-md-6">
+                            <input type="text" ng-model="nameFilter.name" placeholder="Name"/>
+                        </div>
+                        <div class="col-md-1" ng-show="nameFilter.name" style="margin:5px 0px 0px -30px;">
+                            <i class="glyphicon glyphicon-remove" ng-click="nameFilter.name = ''"></i>
+                        </div>
+                        <div class="col-md-5"><input type="text" ng-model="nameFilter.phone" placeholder="Phone"/></div>
                     </div>
                     <div class="row" style="height:50px; margin:5px;" ng-hide="showNewClient" ng-click="makeClientActive(person)" ng-class="checkClientActive(person.id)" ng-repeat="person in clientList| filter:clientSearch track by $index" >
-                        <div class="col-md-6"> {{person.firstName}} {{person.lastName}}</div>
-                        <div class="col-md-6"> {{person.phone}}</div>
-                        <div class="col-md-12" >Haircuts: {{person.counters.progress}} <span ng-if="person.counters.progress == 5" style="background-color: red;color:white;font-weight: bold;padding:5px;">HALF PRICE</span></div>
+                        <div class="col-md-6" style="margin:15px 0px;"> {{person.firstName}} {{person.lastName}}</div>
+                        <div class="col-md-6" style="margin:15px 0px;"><span ng-if="person.counters.progress != 5">Haircuts: {{person.counters.progress}} </span> <span ng-if="person.counters.progress == 5" style="background-color: red;color:white;font-weight: bold;padding:5px; margin-top:5px;">HALF PRICE</span></div>
                     </div>
                     <div class="row" ng-show="showNewClient">
                         <div class="col-md-6"><input capitalize-first name="firstName" placeholder="First name" ng-model="newClient.firstName"></div>
@@ -66,10 +71,13 @@
                 </div>
             </div>
             <div class="col-md-2">
+                <div ng-click="saveSale('eftpos')" id="shoppingCartDoneButton"
+                     class="btn btn-lg btn-success rotate">EFTPOS</div>
                 <div ng-click="addToCart()" id="shoppingCartAddButton"
-                     class="btn btn-lg btn-primary">ADD TO CART</div>
-                <div ng-click="saveSale()" id="shoppingCartDoneButton"
-                     class="btn btn-lg btn-success rotate">DONE</div>
+                     class="btn btn-lg btn-primary"><div><i class="glyphicon glyphicon-arrow-up"></i></div>
+                    <div>ADD</div><div><i class="glyphicon glyphicon-arrow-down"></i></div></div>
+                <div ng-click="saveSale('cash')" id="shoppingCartDoneButton"
+                     class="btn btn-lg btn-success rotate">CASH</div>
             </div>
         </div>
         <div class="row">
@@ -132,13 +140,6 @@
                             </tr>
                         </tfoot>
                     </table>
-                </div>
-                <div class="payment">
-                    <label>Payment: </label>
-                    <select ng-model="cart.payment">
-                        <option value="eftpos">Eftpos</option>
-                        <option value="cash">Cash</option>
-                    </select>
                 </div>
             </div>
         </div>

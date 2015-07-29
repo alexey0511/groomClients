@@ -17,9 +17,9 @@
             </thead><tbody>
                 <tr ng-repeat="visit in visits| filter: visitsDateFilter | orderBy : 'date':true" >
                     <td>{{$index + 1}}</td>
-                    <td>{{visit.date| date:'d MMMM yyyy'}} </td>
+                    <td>{{visit.date| date:'d MMMM yyyy HH:MM'}} </td>
                     <td>
-                        {{visit.client.firstName}} {{visit.client.lastName}}
+                        {{visit.client.name}}
                     </td>
                     <td>{{visit.barber.name}}</td>
                 </tr>

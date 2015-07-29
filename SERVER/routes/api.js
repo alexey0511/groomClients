@@ -15,7 +15,8 @@ router.route('/me')
             // get user from JWT and give readable value to the user
             res.json({
                 user: req.user.username,
-                role: req.user.role
+                role: req.user.role,
+                location:req.user.location
             });
         });
 router.route('/getClients')
@@ -106,7 +107,8 @@ router.route('/users')
                 var users = [];
                 for (var i = 0, l = result.length; i < l; i++) {
                     users.push({username: result[i].username,
-                        password: '', role: result[i].role, _id: result[i]._id, id: result[i].id});
+                        password: '', role: result[i].role, _id: result[i]._id,
+                        id: result[i].id, location:result[i].location});
                 }
                 res.json(users);
             });

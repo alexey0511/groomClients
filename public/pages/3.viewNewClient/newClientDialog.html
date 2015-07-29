@@ -1,5 +1,6 @@
 <div id='newClientForm'>
-    <form class="form-horizontal" ng-submit="addNewClient();newClientForm.$setPristine()" role="form" name='newClientForm'>
+    <form class="form-horizontal" ng-submit="addNewClient();
+            newClientForm.$setPristine()" role="form" name='newClientForm'>
         <h2>NEW CLIENT</h2>
 
         <div class="form-group">
@@ -43,8 +44,9 @@
             <div class="col-xs-offset-6 col-xs-6">
                 <button type="submit" class="btn btn-primary">
                     <i class="glyphicon glyphicon-plus-sign" ></i> Add</button>
-                <button ng-click="resetNewClientForm();newClientForm.$setPristine() " class="btn btn-danger">
-                   Reset</button>
+                <button ng-click="resetNewClientForm();
+                    newClientForm.$setPristine()" class="btn btn-danger">
+                    Reset</button>
             </div>
         </div>
     </form>

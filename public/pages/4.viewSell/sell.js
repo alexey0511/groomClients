@@ -34,6 +34,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.checkClients().then(function () {
                     $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
                     $scope.clientActive = $scope.anonymousClient;
+                    $scope.nameFilter = {
+                        name: $scope.anonymousClient.name,
+                        phone: ''
+                    };
                 });
                 $scope.checkProducts().then(function () {
                     $scope.productActive = $scope.products[0];
@@ -112,11 +116,14 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.addToCart = function () {
                 $scope.cart.barber = $scope.barberActive;
                 $scope.cart.client = $scope.clientActive;
-                
-                
+
                 if ($scope.productActive.type === 'service') {
                     $scope.cartServices = cartService.getServices();
-                    cartService.addService($scope.productActive.id, $scope.productActive.name, $scope.productActive.price, $scope.barberActive);
+                    if ($scope.cart.client.counters.progress === 5 - cartService.getServices().length) {
+                        cartService.addService($scope.productActive.id, $scope.productActive.name, $scope.productActive.price / 2, $scope.barberActive);
+                    } else {
+                        cartService.addService($scope.productActive.id, $scope.productActive.name, $scope.productActive.price, $scope.barberActive);
+                    }
                 } else {
                     $scope.cartProducts = cartService.getProducts();
                     cartService.addProduct($scope.productActive.id, $scope.productActive.name, $scope.productActive.price);
@@ -214,9 +221,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 }
                 return defer.promise;
             };
-            $scope.saveSale = function () {
+            $scope.saveSale = function (paymentType) {
+//                $scope.addToCart();
                 if (!$scope.cart.client) {
-                    commonFunctions.customAlert("Please select a client");
+                    commonFunctions.customAlert("Please click ADD to add product");
                     return;
                 }
                 if (!$scope.cart.barber) {
@@ -232,6 +240,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cart.services = $scope.cartServices;
                 $scope.cart.location = $scope.currentUser;
                 $scope.cart.date = new Date();
+                $scope.cart.payment = paymentType;
 
                 $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
                         -= $scope.cart.points;

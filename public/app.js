@@ -161,29 +161,32 @@ angular.module('myApp', [
                 return defer.promise;
             };
             $scope.recordVisit = function (visit) {
-                var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
-                $scope.increaseCount(clientIndex);
+                if (visit.client.name !== 'Casual Customer') {
+
+                    var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
+                    $scope.increaseCount(clientIndex);
 // redeem right away - use half price haircut
-                if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
-                    $scope.clientList[clientIndex].counters.freeVisits += 1;
-                    // Invoking immediatelly for now. ToDo: implement invoke on button click;
-                    $scope.redeemCoupon(clientIndex);
-                    visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
+                    if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
+                        $scope.clientList[clientIndex].counters.freeVisits += 1;
+                        // Invoking immediatelly for now. ToDo: implement invoke on button click;
+                        $scope.redeemCoupon(clientIndex);
+                        visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
+                    }
+                    if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
+                        $scope.clientList[clientIndex].new = false;
+                        $scope.clientList[clientIndex].lastVisit = new Date();
+                    }
+                    $http.post('/api/visits', visit)
+                            .success(function () {
+                                var clientVisit = JSON.stringify(visit);
+                                $http.post('/api/clients', $scope.clientList[clientIndex])
+                                        .success(function () {
+                                        })
+                                        .error(function (err) {
+                                            console.log("ERROR OCCURED", err);
+                                        });
+                            });
                 }
-                if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
-                    $scope.clientList[clientIndex].new = false;
-                    $scope.clientList[clientIndex].lastVisit = new Date();
-                }
-                $http.post('/api/visits', visit)
-                        .success(function () {
-                            var clientVisit = JSON.stringify(visit);
-                            $http.post('/api/clients', $scope.clientList[clientIndex])
-                                    .success(function () {
-                                    })
-                                    .error(function (err) {
-                                        console.log("ERROR OCCURED", err);
-                                    });
-                        });
             };
             $scope.increaseCount = function (clientIndex) {
                 $scope.verifyCountersNum(clientIndex);
@@ -322,7 +325,9 @@ angular.module('myApp', [
                     // to address @blesh's comment, set attribute value to 'false'
                     // on blur event:
                     element.bind('blur', function () {
-                        scope.$apply(model.assign(scope, false));
+                        if (typeof model.assign === 'function') {
+                            scope.$apply(model.assign(scope, false));
+                        }
                     });
                 }
             };

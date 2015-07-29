@@ -26,7 +26,8 @@ router.route('/')
                 if (typeof result === "object" && result.length === 1) {
                     user = {
                         username: result[0].username,
-                        role: result[0].role
+                        role: result[0].role,
+                        location:result[0].location
                     };
                     token = jwt.sign(user, secret, {expiresInMinutes: 60 * 5});
                     res.json({token: token, username: result[0].username, role: result[0].role});

@@ -34,13 +34,13 @@
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/clients">Clients</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/sell">Sales</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/visits">Haircuts</a></li>
-                        <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/scanClient">Scan QR Code</a></li>
+                        <!--<li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/scanClient">Scan QR Code</a></li>-->
                         <li class="dropdown" ng-if="currentUser.role === 'admin'">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
+<!--                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/report">Report</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/message">Txt messaging</a></li>
-                            </ul>
+                            </ul>-->
                         </li>
                         <li class="dropdown" ng-if="currentUser.role === 'admin'">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
@@ -59,7 +59,7 @@
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <div style="float:right; margin: 20px" ng-if="currentUser" class="ng-cloak">Hi, {{ currentUser.user}}
+                            <div style="float:right; margin: 20px" ng-if="currentUser" class="ng-cloak">You're at {{ currentUser.location}}
                                 <a href="#/login" ng-click="logout()">Logout</a>
                             </div>
                         </li>
