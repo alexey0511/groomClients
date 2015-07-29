@@ -6,7 +6,7 @@ var dbService = (function (appConfig) {
     }
     function getAll(table, success) {
         var method = "GET";
-        var data = {"apiKey": appConfig.DbId};
+        var data = {"apiKey": appConfig.DbId, "l":2000};
         var endpoint = appConfig.DbPath + table;
         sendRequest(endpoint, method, data, success);
     }

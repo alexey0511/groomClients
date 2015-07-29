@@ -152,8 +152,6 @@ router.route('/getVisits')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
             db.getAll("haircuts", function (result) {
-                result = result.slice(Math.max(result.length - 999));
-                
                 res.json(result);
             });
         });
