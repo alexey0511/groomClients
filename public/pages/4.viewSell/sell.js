@@ -16,6 +16,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             }])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
             $scope.init = function () {
+                console.log(commonFunctions.generateGuid());
                 $scope.showNewClient = false;
                 $scope.countPoints = false;
                 $scope.barberActive = {};
