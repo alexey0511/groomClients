@@ -29,7 +29,7 @@ router.route('/')
                         role: result[0].role,
                         location:result[0].location
                     };
-                    token = jwt.sign(user, secret, {expiresInMinutes: 60 * 5});
+                    token = jwt.sign(user, secret, {expiresInMinutes: 60 * 60 * 10});
                     res.json({token: token, username: result[0].username, role: result[0].role});
                 } else {
                     res.status(401);
