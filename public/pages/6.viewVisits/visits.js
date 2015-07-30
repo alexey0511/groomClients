@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.visits', ['ngRoute','myApp.constants'])
+angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/visits', {
                     templateUrl: 'pages/6.viewVisits/visits.html',
                     controller: 'VisitsController',
@@ -19,8 +19,12 @@ angular.module('myApp.visits', ['ngRoute','myApp.constants'])
             $scope.init = function () {
                 $scope.dateFrom = new Date();
                 $scope.dateTo = new Date();
-
-                $scope.checkPurchases().then(null,
+                $scope.dataLoading = true;
+                
+                $scope.checkPurchases().then(
+                        function () {
+                            $scope.dataLoading = false;
+                        },
                         function () {
                             $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
                         });

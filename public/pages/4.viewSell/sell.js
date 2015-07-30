@@ -15,8 +15,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 });
             }])
         .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
+            $scope.$on('barcodeInputClient', function (event, data) {
+                console.log("Data", data.client);
+            });
             $scope.init = function () {
-                console.log(commonFunctions.generateGuid());
                 $scope.showNewClient = false;
                 $scope.countPoints = false;
                 $scope.barberActive = {};
@@ -95,7 +97,9 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             };
             $scope.makeClientActive = function (client) {
                 $scope.clientActive = client;
-                $scope.nameFilter.name = $scope.clientActive.name;
+                $scope.nameFilter = {
+                    name: $scope.clientActive.name
+                };
             };
             $scope.checkClientActive = function (clientId) {
                 if (clientId === $scope.clientActive.id) {

@@ -27,7 +27,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
         .controller('SingleClientController', function ($scope, commonFunctions, $location, $routeParams, $http) {
             $scope.init = function () {
                 $scope.qrClient = "";
-
                 $scope.checkClients().then(function () {
                     $scope.getClient();
                 }, function () {
@@ -68,8 +67,11 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
             $scope.init = function () {
                 $scope.currentPage = 0;
                 $scope.pageSize = 50;
+                $scope.dataLoading = true;
 
-                $scope.checkClients();
+                $scope.checkClients().then(function () {
+                    $scope.dataLoading = false;
+                });
 
             };
 // BOF PAGINATION 

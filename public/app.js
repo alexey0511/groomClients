@@ -40,9 +40,11 @@ angular.module('myApp', [
                 $scope.logout();
                 $location.path('/login');
             });
+
             $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
+                $scope.visits = [];
                 $scope.currentUser = null;
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
@@ -56,7 +58,36 @@ angular.module('myApp', [
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
 
+                $scope.barcodeScan();
+
             };
+            $scope.barcodeScan = function () {
+                var pressed = false;
+                var chars = [];
+                $(window).keypress(function (e) {
+                    if (e.which >= 48 && e.which <= 57) {
+                        chars.push(String.fromCharCode(e.which));
+                    }
+
+                    if (pressed === false) {
+                        setTimeout(function () {
+                            if (chars.length >= 5) {
+                                var barcode = chars.join("");
+                                console.log("Barcode Scanned: " + barcode);
+                                var client = clientsService.findClientByQrCode(barcode, $scope.clientList);
+                                $location.path('/sell');
+                                $scope.$broadcast('barcodeInputClient', {
+                                    client: client
+                                });
+                            }
+                            chars = [];
+                            pressed = false;
+                        }, 500);
+                    }
+                    pressed = true;
+                });
+            };
+
             $scope.findClient = function (id) {
                 for (var i = 0, listLength = $scope.clientList.length; i < listLength; i++) {
                     if (typeof $scope.clientList[i].id === 'undefined') {
@@ -81,16 +112,14 @@ angular.module('myApp', [
             };
             $scope.checkPurchases = function () {
                 var defer = $q.defer();
-                if (!$scope.visits) {
-                    $http.get('/api/getVisits').then(
-                            function (response) {
-                                $scope.visits = response.data;
-                                defer.resolve();
-                            },
-                            function () {
-                                defer.reject();
-                            });
-                }
+                $http.get('/api/getVisits').then(
+                        function (response) {
+                            $scope.visits = response.data;
+                            defer.resolve();
+                        },
+                        function () {
+                            defer.reject();
+                        });
                 return defer.promise;
             };
             $scope.checkClients = function () {
@@ -161,38 +190,41 @@ angular.module('myApp', [
                 return defer.promise;
             };
             $scope.recordVisit = function (visit) {
-                if (visit.client.name !== 'Casual Customer') {
 
-                    var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
-                    $scope.increaseCount(clientIndex);
+                var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
+                $scope.increaseCount(clientIndex);
 // redeem right away - use half price haircut
-                    if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
-                        $scope.clientList[clientIndex].counters.freeVisits += 1;
-                        // Invoking immediatelly for now. ToDo: implement invoke on button click;
-                        $scope.redeemCoupon(clientIndex);
-                        visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
-                    }
-                    if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
-                        $scope.clientList[clientIndex].new = false;
-                        $scope.clientList[clientIndex].lastVisit = new Date();
-                    }
-                    $http.post('/api/visits', visit)
-                            .success(function () {
-                                var clientVisit = JSON.stringify(visit);
-                                $http.post('/api/clients', $scope.clientList[clientIndex])
-                                        .success(function () {
-                                        })
-                                        .error(function (err) {
-                                            console.log("ERROR OCCURED", err);
-                                        });
-                            });
+                if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
+                    $scope.clientList[clientIndex].counters.freeVisits += 1;
+                    // Invoking immediatelly for now. ToDo: implement invoke on button click;
+                    $scope.redeemCoupon(clientIndex);
+                    visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
                 }
+                if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
+                    $scope.clientList[clientIndex].new = false;
+                    $scope.clientList[clientIndex].lastVisit = new Date();
+                }
+                $http.post('/api/visits', visit)
+                        .success(function () {
+//                            var clientVisit = JSON.stringify(visit);
+//                    $scope.visits.push(clientVisit);
+                            $http.post('/api/clients', $scope.clientList[clientIndex])
+                                    .success(function () {
+                                    })
+                                    .error(function (err) {
+                                        console.log("ERROR OCCURED", err);
+                                    });
+                        });
             };
             $scope.increaseCount = function (clientIndex) {
                 $scope.verifyCountersNum(clientIndex);
                 if (Array.isArray($scope.clientList) && typeof ($scope.clientList[clientIndex]) !== 'undefined'
                         && typeof ($scope.clientList[clientIndex].counters) !== 'undefined') {
-                    $scope.clientList[clientIndex].counters.progress += 1;
+                    if ($scope.clientList[clientIndex].name !== 'Casual Customer') {
+                        $scope.clientList[clientIndex].counters.progress += 1;
+                    } else {
+                        $scope.clientList[clientIndex].counters.progress = 0;
+                    }
                     $scope.clientList[clientIndex].counters.visits += 1;
                     $scope.clientList[clientIndex].lastVisit = new Date();
                 } else {

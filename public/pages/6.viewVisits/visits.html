@@ -9,21 +9,28 @@
             <label>To: </label>
             <input ng-model="dateTo" type="date"/>
         </div>
-        <table class="table table-striped table-hover" id='VisitsTableMain' >
-            <thead>
-                <tr>
-                    <th>#</th><th>Date</th><th>Client</th><th>Barber</th>
-                </tr>
-            </thead><tbody>
-                <tr ng-repeat="visit in visits| filter: visitsDateFilter | orderBy : 'date':true" >
-                    <td>{{$index + 1}}</td>
-                    <td>{{visit.date| date:'d MMMM yyyy HH:MM'}} </td>
-                    <td>
-                        {{visit.client.name}}
-                    </td>
-                    <td>{{visit.barber.name}}</td>
-                </tr>
-            <tbody>
-        </table>
+        <div>
+            <table class="table table-striped table-hover" id='VisitsTableMain' >
+                <thead>
+                    <tr>
+                        <th>#</th><th>Date</th><th>Client</th><th>Barber</th>
+                    </tr>
+                </thead><tbody>
+                    <tr ng-show="dataLoading">
+                        <td colspan="4">
+                            <img ng-src="./img/progress.gif" alt="loading" width="100px" height="100px"/>
+                        </td>
+                    </tr>
+                    <tr  ng-repeat="visit in visits| filter: visitsDateFilter | orderBy : 'date':true" >
+                        <td>{{$index + 1}}</td>
+                        <td>{{visit.date| date:'d MMMM yyyy HH:MM'}} </td>
+                        <td>
+                            {{visit.client.name}}
+                        </td>
+                        <td>{{visit.barber.name}}</td>
+                    </tr>
+                <tbody>
+            </table>
+        </div>
     </div>
 </div>

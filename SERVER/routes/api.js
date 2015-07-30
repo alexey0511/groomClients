@@ -37,7 +37,6 @@ router.route('/clients')
 router.route('/clients/:id')
         .post(bodyParserJson, function (req, res) {
             if (req.param("id") === req.body.id.toString()) {
-                console.log("YES");
                 // get user from JWT and give readable value to the user
                 var success = function (data) {
                     data ? res.send(data) : res.status(400).send({message: "Failed retrieve record"});

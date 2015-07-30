@@ -12,13 +12,17 @@
                         <th>#</th><th>Name</th><th>Contact Phone</th><th>N Cuts</th><th>Last haircut</th>
                     </tr>
                     <tr>
-                        <td></td>
-                        <td><input type="text" ng-model="nameFilter.name" placeholder="Name"/></td>
+                        <td colspan="3"><input type="text" ng-model="nameFilter.name" placeholder="Name"/></td>
                         <td><input type="text" ng-model="nameFilter.phone" placeholder="Phone"/></td>
                         <td></td>
                     </tr>
                 </thead><tbody>
-                    <tr ng-repeat="person in clientList| filter:nameFilter | startFrom:currentPage * pageSize:nameFilter | limitTo:pageSize track by $index"  >
+                    <tr ng-show="dataLoading">
+                        <td colspan="5">
+                            <img ng-src="./img/progress.gif" alt="loaging" width="100px" height="100px" />
+                        </td>
+                    </tr>
+                    <tr ng-repeat="person in clientList | filter:nameFilter | startFrom:currentPage * pageSize:nameFilter | limitTo:pageSize track by $index"  >
                         <td>{{(currentPage) * pageSize + $index + 1}}</td>
                         <td ng-click='openClient(person.id)'> {{person.firstName}} {{person.lastName}}</td>
                         <td ng-click='openClient(person.id)'>{{person.phone}}</td>
