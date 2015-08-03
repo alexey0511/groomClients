@@ -20,23 +20,33 @@ angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
                 $scope.patterns = {};
                 $scope.patterns.phone = new RegExp('^(64)');
                 $scope.newClientMaster = {
-                    firstName: '',
-                    lastName: ''
-                };
+                        id: '',
+                        firstName: '',
+                        lastName: '',
+                        name: this.firstName + " " + this.lastName,
+                        counters: {
+                            progress: 0,
+                            visits: 0
+                        },
+                        visits: [],
+                        points: 0,
+                        createdOn: new Date(),
+                        newClient: true,
+                        tokenNumber:''
+                    };
                 $scope.newClient = angular.copy($scope.newClientMaster);
             };
             $scope.addNewClient = function () {
                 $scope.newClient.id = commonFunctions.generateGuid();
                 $scope.newClient.name = $scope.newClient.firstName + " " + $scope.newClient.lastName;
                 $scope.newClient.counters = {
-                    "progress": 0,
-                    "visits": 0,
-                    "freeVisits": 0
-                };
+                    progress: 0,
+                    visits: 0                };
                 $scope.newClient.lastVisit = new Date();
                 $scope.newClient.createdOn = new Date();
                 $scope.newClient.visits = [];
                 $scope.newClient.points = 0;
+                $scope.newClient.tokenNumber = '';
                 // save to DB
                 $http.post("/api/clients", $scope.newClient)
                         .success(function (clientRecord) {

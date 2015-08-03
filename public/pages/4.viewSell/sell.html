@@ -97,17 +97,17 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="service in cartServices">
-                                <td>{{$index}}</td>
+                                <td>{{$index+1}}</td>
                                 <td>{{service.name}}</td>
                                 <td>{{service.barber.name}}</td>
-                                <td>{{service.qty}}</td>
+                                <td>1</td>
                                 <td>{{service.price}}</td>
-                                <td>{{service.price * service.qty}}</td>
+                                <td>{{service.price}}</td>
                                 <td><button ng-click="remove(service.id)"
                                             class="btn btn-sm btn-warning">Remove</button></td>
                             </tr>
                             <tr ng-repeat="item in cartProducts">
-                                <td>{{$index}}</td>
+                                <td>{{$index+cartServices.length+1}}</td>
                                 <td>{{item.name}}</td>
                                 <td></td>
                                 <td>{{item.qty}}</td>

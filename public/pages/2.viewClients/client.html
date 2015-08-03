@@ -1,15 +1,10 @@
 <div id="clientInfoForm">
     <div>
         <h2 style='text-align: center;'>EDIT CLIENT INFO</h2>
-        <qrcode data="string"></qrcode>
     </div>
-    <div class='row' style='border:1px solid bladk'>
+    <div class='row'>
         <div class='col-sm-4 '>
-            <div ng-show="qrClient"class='center-block' style='width: 250px; height: 250px;margin-top:50px;'>
-                <qr text="qrClient" type-number="0" correction-level="L" input-mode="inputMode" image="image"></qr>
-                <div class='text-center'><b>{{qrClient}}</b></div>
-            </div>
-            <!--            <img src='components/img/profile_placeholder.png' />-->
+                        <img src='/img/profile_placeholder.png' width="300" height="300" />
         </div>
         <div class='col-sm-4'>
             <form class="form-horizontal" ng-submit="updateClient()" role="form" >
@@ -79,9 +74,9 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="QR code" class="col-sm-3 control-label">QR code number</label>
+                    <label for="tokenCode" class="col-sm-3 control-label">Token</label>
                     <div class="col-sm-6">
-                        <input class="form-control" id="inputPhone" placeholder="enter code" ng-model="client.qrcode">
+                        <input class="form-control" id="inputPhone" placeholder="enter code" ng-model="client.tokenNumber">
                     </div>
                 </div>
                 <div class="form-group">

@@ -21,8 +21,10 @@
             </tbody>
             <tbody>
                 <tr>
-                    <td><div >{{$index}}</div></td><td><input type="text" ng-model="newProduct.name">
-                    </td><td><input type="currency" ng-model="newProduct.price"></td>
+                    <td>
+                        <textarea placeholder="Product description" rows="2" cols="10"  ng-model="newProduct.description"></textarea></td>
+                    <td><input type="text" ng-model="newProduct.name"></td>
+                    <td><input type="currency" ng-model="newProduct.price"></td>
                     <td>
                         <select ng-model="newProduct.type">
                             <option value="service" >Service</option>

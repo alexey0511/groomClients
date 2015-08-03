@@ -26,7 +26,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
             }])
         .controller('SingleClientController', function ($scope, commonFunctions, $location, $routeParams, $http) {
             $scope.init = function () {
-                $scope.qrClient = "";
                 $scope.checkClients().then(function () {
                     $scope.getClient();
                 }, function () {
@@ -42,10 +41,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
                     $scope.client.counters.visits = Number($scope.client.counters.visits);
                     $scope.client.counters.progress = Number($scope.client.counters.progress);
                     $scope.client.counters.freeVisits = Number($scope.client.counters.freeVisits);
-                    // display QR code
-                    if ($scope.client.qrcode) {
-                        $scope.qrClient = $scope.client.qrcode.toString();
-                    }
                     $http.get('/api/visits/' + $scope.client.id)
                             .success(function (response) {
                                 $scope.VisitsArray = response;
@@ -72,7 +67,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
                 $scope.checkClients().then(function () {
                     $scope.dataLoading = false;
                 });
-
             };
 // BOF PAGINATION 
             $scope.numberOfPages = function () {

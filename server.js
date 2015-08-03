@@ -2,7 +2,7 @@ var express, expressJwt,
         app, secret, port, env,
         authentication, texting, apiRoute, db, config;
 
-env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+env = process.env.NODE_ENV || 'development';
 var config = require('./SERVER/config.js');
 console.log('Environment: ', env);
 

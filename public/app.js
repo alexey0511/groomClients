@@ -5,18 +5,15 @@ angular.module('myApp', [
     'myApp.constants',
     'myApp.clients',
     'myApp.sell',
-    'myApp.scanClient',
     'myApp.visits',
     'myApp.newclient',
     'myApp.manageProducts',
     'myApp.manageUsers',
     'myApp.manageClients',
-    'myApp.generateQR',
     'myApp.manageStaff',
     'ngCookies',
     'myApp.report',
     'ui.bootstrap',
-    'ja.qr',
     'myApp.version',
     'myApp.Authentication',
     'myApp.txting'
@@ -57,9 +54,6 @@ angular.module('myApp', [
                 if ($cookieStore.get('userInfo')) {
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
-
-                $scope.barcodeScan();
-
             };
             $scope.barcodeScan = function () {
                 var pressed = false;
@@ -68,13 +62,15 @@ angular.module('myApp', [
                     if (e.which >= 48 && e.which <= 57) {
                         chars.push(String.fromCharCode(e.which));
                     }
-
                     if (pressed === false) {
                         setTimeout(function () {
                             if (chars.length >= 5) {
                                 var barcode = chars.join("");
+//                var barcode = '15107';
                                 console.log("Barcode Scanned: " + barcode);
                                 var client = clientsService.findClientByQrCode(barcode, $scope.clientList);
+                                console.log(client);
+                                console.log($location.path());
                                 $location.path('/sell');
                                 $scope.$broadcast('barcodeInputClient', {
                                     client: client
@@ -93,7 +89,6 @@ angular.module('myApp', [
                     if (typeof $scope.clientList[i].id === 'undefined') {
                         $scope.clientList[i].id = $scope.clientList[i]._id;
                     }
-                    ;
                     if ($scope.clientList[i].id.toString() === id) {
                         return $scope.clientList[i];
                     }
@@ -126,11 +121,13 @@ angular.module('myApp', [
                 $scope.loadingClients = true;
                 var defer = $q.defer();
                 if ($scope.clientList && $scope.clientList.length > 0) {
+                    $scope.barcodeScan();
                     defer.resolve();
                 } else {
                     $http.get('/api/getClients')
                             .success(function (clientList) {
                                 $scope.clientList = clientList;
+                                $scope.barcodeScan();
                                 defer.resolve();
                             })
                             .error(function () {
@@ -190,24 +187,23 @@ angular.module('myApp', [
                 return defer.promise;
             };
             $scope.recordVisit = function (visit) {
-
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
                 $scope.increaseCount(clientIndex);
 // redeem right away - use half price haircut
                 if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
-                    $scope.clientList[clientIndex].counters.freeVisits += 1;
                     // Invoking immediatelly for now. ToDo: implement invoke on button click;
                     $scope.redeemCoupon(clientIndex);
-                    visit.price = Math.round(Number(visit.price) * 100 / 2) / 100;
-                }
-                if ($scope.clientList[clientIndex].visits > 1 && $scope.clientList[clientIndex].new) {
-                    $scope.clientList[clientIndex].new = false;
-                    $scope.clientList[clientIndex].lastVisit = new Date();
+                    visit.product.price = Math.round(Number(visit.product.price) * 100 / 2) / 100;
                 }
                 $http.post('/api/visits', visit)
                         .success(function () {
-//                            var clientVisit = JSON.stringify(visit);
-//                    $scope.visits.push(clientVisit);
+                            var clientVisitId = visit.id;
+                            if (!$scope.clientList[clientIndex].visits) {
+                                $scope.clientList[clientIndex].visits = [];
+                            }
+                            $scope.clientList[clientIndex].lastVisit = new Date();
+                            $scope.clientList[clientIndex].visits.push(clientVisitId);
+                            $scope.visits.push(visit);
                             $http.post('/api/clients', $scope.clientList[clientIndex])
                                     .success(function () {
                                     })
@@ -235,10 +231,6 @@ angular.module('myApp', [
                 if ($scope.clientList[clientIndex].counters.progress > 0) {
                     $http.post('/api/removeLatestPurchase', {client: $scope.clientList[clientIndex]})
                             .success(function () {
-                                if ($scope.clientList[clientIndex].counters.freeVisits > 0
-                                        && $scope.clientList[clientIndex].counters.visits > 0) {
-                                    $scope.clientList[clientIndex].counters.freeVisits -= 1;
-                                }
                                 if ($scope.clientList[clientIndex].counters.progress > 0) {
                                     $scope.clientList[clientIndex].counters.progress -= 1;
                                 }
@@ -251,13 +243,8 @@ angular.module('myApp', [
                 }
             };
             $scope.redeemCoupon = function (clientIndex) {
-                if ($scope.clientList[clientIndex].counters.freeVisits > 0) {
-                    $scope.clientList[clientIndex].counters.progress = 0;
-                    $scope.clientList[clientIndex].counters.freeVisits -= 1;
-                    commonFunctions.customAlert(DEFAULT_SETTINGS.winMessage);
-                } else {
-                    commonFunctions.customAlert("You don't have any discount coupons yet");
-                }
+                $scope.clientList[clientIndex].counters.progress = 0;
+                commonFunctions.customAlert(DEFAULT_SETTINGS.winMessage);
             };
             $scope.verifyCountersNum = function (clientIndex) {
                 if (!Number($scope.clientList[clientIndex].counters.progress) || $scope.clientList[clientIndex].counters.progress === 'NaN')
@@ -268,11 +255,7 @@ angular.module('myApp', [
                 {
                     parseInt($scope.clientList[clientIndex].counters.visits);
                 }
-                if (!Number($scope.clientList[clientIndex].counters.freeVisits) || $scope.clientList[clientIndex].counters.freeVisits === 'NaN')
-                {
-                    parseInt($scope.clientList[clientIndex].counters.freeVisits);
-                }
-            }
+            };
 
             $scope.init();
         })
@@ -286,7 +269,7 @@ angular.module('myApp', [
                     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                             s4() + '-' + s4() + s4() + s4();
                 },
-                makeSaleSound: function () {
+                makeSaleSound: function (snd) {
                     var snd = new Audio("./img/sale.wav"); // buffers automatically when created
                     snd.play();
                 },
@@ -482,10 +465,9 @@ angular.module('myApp', [
                         return false;
                     }
                 },
-                findClientByQrCode: function (qrcode, clientList) {
+                findClientByQrCode: function (tokenNumber, clientList) {
                     for (var i = 0, l = clientList.length; i < l; i++) {
-                        console.log(qrcode, clientList[i].qrcode);
-                        if (qrcode === clientList[i].qrcode) {
+                        if (tokenNumber === clientList[i].tokenNumber) {
                             return clientList[i];
                         }
                     }
