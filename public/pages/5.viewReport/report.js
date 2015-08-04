@@ -17,8 +17,13 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
             }])
         .controller('ReportController', function ($scope, $http) {
             $scope.init = function () {
+                Date.prototype.getWeekNumber = function () {
+                    var d = new Date(+this);
+                    d.setHours(0, 0, 0);
+                    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+                    return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
+                };
                 $scope.haircutsByUser = [];
-
                 $scope.resetVars();
                 $scope.checkUsers();
                 $scope.checkStaffList();
@@ -28,13 +33,48 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                         }, function () {
                     $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
                 });
+                $scope.weekdayAll = {monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0, saturday: 0};
+                $scope.weekdayThisWeek = {monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0, saturday: 0};
+                $scope.periodAll = {today: 0, week: 0, month: 0, year: 0};
+                $scope.staffAll = {Muniah: 0, Kim: 0, Herman: 0, Peter: 0};
+                $scope.staffThisWeek = {Muniah: 0, Kim: 0, Herman: 0, Peter: 0};
+                $scope.todayStats = {
+                    groom1: {cash: 0, eftpos: 0, total: 0, clients: 0},
+                    groom2: {cash: 0, eftpos: 0, total: 0, clients: 0}
+                };
+//                $scope.calcTodayStats();
             };
-
+//            $scope.calcTodayStats = function () {
+//                for (var i = 0, l = $scope.visits.length; i < l; i++) {
+//                    console.log($scope.visits[i].date);
+//                    if ($scope.visits[i].location === 'Tinakori') {
+//                        if ($scope.visits[i].payment === 'cash') {
+//                            $scope.todayStats.groom1.cash += $scope.visits[i].price;
+//                        }
+//                        if ($scope.visits[i].payment === 'eftpos') {
+//                            $scope.todayStats.groom1.eftpos += $scope.visits[i].price;
+//                        }
+//                        $scope.todayStats.groom1.total += $scope.visits[i].price;
+//                        $scope.todayStats.groom1.clients += 1;
+//                    }
+//                    if ($scope.visits[i].location === 'Waring Taylor') {
+//                        if ($scope.visits[i].payment === 'cash') {
+//                            $scope.todayStats.groom1.cash += $scope.visits[i].price;
+//                        }
+//                        if ($scope.visits[i].payment === 'eftpos') {
+//                            $scope.todayStats.groom1.eftpos += $scope.visits[i].price;
+//                        }
+//                        $scope.todayStats.groom1.total += $scope.visits[i].price;
+//                        $scope.todayStats.groom1.clients += 1;
+//                    }
+//                }
+//            };
             $scope.resetVars = function () {
                 $scope.today = {};
                 $scope.today.date = new Date();
                 $scope.today.year = $scope.today.date.getFullYear();
                 $scope.today.month = $scope.today.date.getMonth() + 1;
+                $scope.today.week = $scope.today.date.getWeekNumber();
                 $scope.today.day = $scope.today.date.getDate();
                 $scope.stats = {};
                 $scope.stats.acToday = 0;
@@ -54,40 +94,55 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 $scope.stats.pMonth = 0;
                 $scope.stats.pYear = 0;
             };
-
             // FILTER BY USER
-            $scope.userChange = function () {
-                $scope.haircutsByUser = [];
-                for (var i = 0, l = $scope.visits.length; i < l; i++) {
-                    if ($scope.selectedUser) {
-                        if ($scope.visits[i].barber === $scope.selectedUser) {
-                            $scope.haircutsByUser.push($scope.visits[i]);
-                        }
-                        if ($scope.haircutsByUser.length > 0) {
-                            $scope.calcStats($scope.haircutsByUser);
-                        } else {
-                            $scope.resetVars();
+            $scope.storeChange = function () {
+                $scope.haircutsByStore = [];
+                if ($scope.selectedStore) {
+                    if ($scope.haircutsByBarber && $scope.haircutsByBarber.length > 0) {
+                        for (var i = 0, l = $scope.haircutsByBarber.length; i < l; i++) {
+                            if ($scope.haircutsByBarber[i].store === $scope.selectedStore) {
+                                $scope.haircutsByStore.push($scope.haircutsByBarber[i]);
+                            }
                         }
                     } else {
-                        $scope.calcStats($scope.visits);
+                        for (var i = 0, l = $scope.visits.length; i < l; i++) {
+                            if ($scope.visits[i].store === $scope.selectedStore) {
+                                $scope.haircutsByStore.push($scope.visits[i]);
+                            }
+                        }
                     }
+                    if ($scope.haircutsByStore.length > 0) {
+                        $scope.calcStats($scope.haircutsByStore);
+                    } else {
+                        $scope.resetVars();
+                    }
+                } else {
+                    $scope.calcStats($scope.visits);
                 }
             };
             $scope.barberChange = function () {
                 $scope.haircutsByBarber = [];
-                for (var i = 0, l = $scope.visits.length; i < l; i++) {
-                    if ($scope.selectedBarber) {
-                        if ($scope.visits[i].barber === $scope.selectedBarber) {
-                            $scope.haircutsByBarber.push($scope.visits[i]);
-                        }
-                        if ($scope.haircutsByBarber.length > 0) {
-                            $scope.calcStats($scope.haircutsByBarber);
-                        } else {
-                            $scope.resetVars();
+                if ($scope.selectedBarber) {
+                    if ($scope.haircutsByStore && $scope.haircutsByStore.length > 0) {
+                        for (var i = 0, l = $scope.haircutsByStore.length; i < l; i++) {
+                            if ($scope.haircutsByStore[i].barber.name === $scope.selectedBarber) {
+                                $scope.haircutsByBarber.push($scope.haircutsByStore[i]);
+                            }
                         }
                     } else {
-                        $scope.calcStats($scope.visits);
+                        for (var i = 0, l = $scope.visits.length; i < l; i++) {
+                            if ($scope.visits[i].barber.name === $scope.selectedBarber) {
+                                $scope.haircutsByBarber.push($scope.visits[i]);
+                            }
+                        }
                     }
+                    if ($scope.haircutsByBarber.length > 0) {
+                        $scope.calcStats($scope.haircutsByBarber);
+                    } else {
+                        $scope.resetVars();
+                    }
+                } else {
+                    $scope.calcStats($scope.visits);
                 }
             };
             // CALCULATE DATA
@@ -95,32 +150,38 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 $scope.resetVars();
                 // change list to particular user
                 for (var i = 0, l = list.length; i < l; i++) {
-                    var date, year, month, day;
+                    var date, year, month, week, day;
                     date = new Date(list[i].date);
                     year = date.getFullYear();
                     month = date.getMonth() + 1;
+                    week = date.getWeekNumber();
                     day = date.getDate();
-                    if (!list[i].price) {
-                        list[i].price = 0;
-                    }
                     if ($scope.today.year === year) {
                         $scope.stats.acYear++;
-                        $scope.stats.pYear += Number(list[i].price);
-                        if (list[i].new === true) {
+                        $scope.stats.pYear += Number(list[i].product.price);
+                        if (list[i].client.counters && list[i].client.counters.visits === 1) {
                             $scope.stats.ncYear++;
                         }
                         if ($scope.today.month === month) {
                             $scope.stats.acMonth++;
-                            if (list[i].new === true) {
+                            if (list[i].client.counters && list[i].client.counters.visits === 1) {
                                 $scope.stats.ncMonth++;
                             }
-                            $scope.stats.pMonth += Number(list[i].price);
-                            if ($scope.today.day === day) {
-                                $scope.stats.acToday++;
-                                if (list[i].new === true) {
-                                    $scope.stats.ncToday++;
+                            $scope.stats.pMonth += Number(list[i].product.price);
+                            if ($scope.today.week === week) {
+                                $scope.stats.acWeek++;
+                                if (list[i].client.counters && list[i].client.counters.visits === 1) {
+                                    $scope.stats.ncWeek++;
                                 }
-                                $scope.stats.pToday += Number(list[i].price);
+                                $scope.stats.pWeek += Number(list[i].product.price);
+
+                                if ($scope.today.day === day) {
+                                    $scope.stats.acToday++;
+                                    if (list[i].client.counters && list[i].client.counters.visits === 1) {
+                                        $scope.stats.ncToday++;
+                                    }
+                                    $scope.stats.pToday += Number(list[i].product.price);
+                                }
                             }
                         }
                     }

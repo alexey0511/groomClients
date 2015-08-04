@@ -7,8 +7,17 @@ angular.module('myApp.dialogs', ['ngRoute', 'ui.bootstrap'])
                 $modalInstance.dismiss(false);
             };
         })
+        .controller("ConfirmDialogController", function ($scope, $modalInstance, message) {
+            $scope.message = message;
+            $scope.ok = function () {
+                $modalInstance.close(true);
+            };
+            $scope.cancel = function () {
+                $modalInstance.dismiss(false);
+            };
+        })
         .controller("customAlertController", function ($scope, $modalInstance, alert) {
-           $scope.alert = alert;
+            $scope.alert = alert;
             $scope.ok = function () {
                 $modalInstance.close(true);
             };

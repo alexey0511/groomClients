@@ -6,7 +6,7 @@ var dbService = (function (appConfig) {
     }
     function getAll(table, success) {
         var method = "GET";
-        var data = {"apiKey": appConfig.DbId, "l":2000};
+        var data = {"apiKey": appConfig.DbId, "l": 2000};
         var endpoint = appConfig.DbPath + table;
         sendRequest(endpoint, method, data, success);
     }
@@ -52,7 +52,6 @@ var dbService = (function (appConfig) {
     function sendRequest(endpoint, method, data, success) {
         var querystring = require('querystring');
         var https = require('https');
-        var i = 0;
         var host = 'api.mongolab.com';
 
         var dataString = JSON.stringify(data);
@@ -61,8 +60,7 @@ var dbService = (function (appConfig) {
             if (data !== {}) {
                 endpoint += '?' + querystring.stringify(data);
             }
-        }
-        else {
+        } else {
             headers = {
                 'Content-Type': 'application/json',
                 'Content-Length': dataString.length
@@ -77,7 +75,7 @@ var dbService = (function (appConfig) {
         };
 
         var req = https.request(options, function (res) {
-            res.setEncoding('utf-8');
+//            res.setEncoding('utf-8');
 
             var responseString = '';
 

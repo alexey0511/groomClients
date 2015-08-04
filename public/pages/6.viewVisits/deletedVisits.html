@@ -1,5 +1,5 @@
 <div>
-    <div><h1>Visits</h1>
+    <div><h1>DELETED VISITS</h1>
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div>
@@ -14,7 +14,7 @@
                 <thead>
                     <tr>
                         <th>#</th><th>Date</th><th>Client</th><th>Barber</th><th>Haircut</th><th>Price</th>
-                        <th>Payment</th><th>Location</th>
+                        <th>Payment</th><th>Location</th><th></th>
                     </tr>
                 </thead><tbody>
                     <tr ng-show="dataLoading">
@@ -22,7 +22,7 @@
                             <img ng-src="./img/progress.gif" alt="loading" width="100px" height="100px"/>
                         </td>
                     </tr>
-                    <tr  ng-click='openVisit(visit.id)' ng-repeat="visit in visits| filter: visitsDateFilter | orderBy : 'date':true" >
+                    <tr  ng-repeat="visit in deletedVisits| filter: visitsDateFilter | orderBy : 'date':true" >
                         <td>{{$index + 1}}</td>
                         <td>{{visit.date| date:'d MMMM yyyy H:m'}} </td>
                         <td>
@@ -33,10 +33,12 @@
                         <td>{{visit.product.price}}</td>
                         <td>{{visit.paymentType}}</td>
                         <td>{{visit.store}}</td>
+                        <td><div class="btn btn-success" ng-click="restoreDeletedVisit(visit)">Restore</div>
+                        </td>
                     </tr>
                 <tbody>
             </table>
-            <div class="btn btn-success" ng-click="restoreDeletedVisitPage()">Restore deleted visits</div>
+            <div class="btn btn-success" ng-click="goBackToVisitsPage()">Back</div>
         </div>
     </div>
 </div>

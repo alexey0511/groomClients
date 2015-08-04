@@ -16,7 +16,7 @@ router.route('/me')
             res.json({
                 user: req.user.username,
                 role: req.user.role,
-                location:req.user.location
+                location: req.user.location
             });
         });
 router.route('/getClients')
@@ -107,7 +107,7 @@ router.route('/users')
                 for (var i = 0, l = result.length; i < l; i++) {
                     users.push({username: result[i].username,
                         password: '', role: result[i].role, _id: result[i]._id,
-                        id: result[i].id, location:result[i].location});
+                        id: result[i].id, location: result[i].location});
                 }
                 res.json(users);
             });
@@ -146,13 +146,28 @@ router.route('/orders')
             };
             db.create("/orders", req.body, success);
         });
-        // VISITS
+// VISITS
 router.route('/getVisits')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
             db.getAll("haircuts", function (result) {
                 res.json(result);
             });
+        });
+router.route('/getDeletedVisits')
+        .get(function (req, res) {
+            // get user from JWT and give readable value to the user
+            db.getAll("deletedVisits", function (result) {
+                res.json(result);
+            });
+        });
+router.route('/restoreVisit')
+        .post(bodyParserJson, function (req, res) {
+            // get user from JWT and give readable value to the user
+            var success = function (data) {
+                data ? res.send(data) : res.status(400).send({message: "Failed to restore visit"});
+            };
+            db.create("/haircuts", req.body, success);
         });
 router.route('/visits')
         .post(bodyParserJson, function (req, res) {
@@ -161,6 +176,18 @@ router.route('/visits')
                 data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
             };
             db.create("/haircuts", req.body, success);
+        });
+router.route('/visit/:id')
+        .post(bodyParserJson, function (req, res) {
+            if (req.param("id") === req.body.id.toString()) {
+                // get user from JWT and give readable value to the user
+                var success = function (data) {
+                    data ? res.send(data) : res.status(400).send({message: "Failed retrieve record"});
+                };
+                db.create("/haircuts", req.body, success);
+            } else {
+                console.log("NO", typeof req.param("id"), typeof req.body.id);
+            }
         });
 router.route('/visits/:id')
         .get(function (req, res) {
@@ -173,6 +200,15 @@ router.route('/visits/:id')
                     }
                 }
                 res.send(visits);
+            });
+        });
+router.route('/deleteVisit')
+        .post(bodyParserJson, function (req, res) {
+            var success = function (data) {
+                data ? res.send(data) : res.status(400).send({message: "Failed.."});
+            };
+            db.create('deletedVisits', req.body, function () {
+                db.deleteRecord("haircuts", req.body._id.$oid, success);
             });
         });
 router.route('/removeLatestPurchase')
