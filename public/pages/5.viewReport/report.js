@@ -15,7 +15,8 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                     }
                 });
             }])
-        .controller('ReportController', function ($scope, $http) {
+        .controller('ReportController', function ($scope, $http, visitsService, productsService,
+                storeService, staffService) {
             $scope.init = function () {
                 Date.prototype.getWeekNumber = function () {
                     var d = new Date(+this);
@@ -25,14 +26,11 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 };
                 $scope.haircutsByUser = [];
                 $scope.resetVars();
-                $scope.checkUsers();
-                $scope.checkStaffList();
-                $scope.checkPurchases().then(
-                        function () {
-                            $scope.calcStats($scope.visits);
-                        }, function () {
-                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
-                });
+                $scope.products = productsService.getProducts();
+                $scope.users = storeService.getStoreList();
+                $scope.staffList = staffService.getStaffList();
+                $scope.visits = visitsService.getVisits();
+                $scope.calcStats($scope.visits);
                 $scope.weekdayAll = {monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0, saturday: 0};
                 $scope.weekdayThisWeek = {monday: 0, tuesday: 0, wednesday: 0, thursday: 0, friday: 0, saturday: 0};
                 $scope.periodAll = {today: 0, week: 0, month: 0, year: 0};

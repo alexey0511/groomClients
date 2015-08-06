@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.manageProducts', ['ngRoute','myApp.constants'])
+angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
 
         .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/manageproducts', {
@@ -15,12 +15,13 @@ angular.module('myApp.manageProducts', ['ngRoute','myApp.constants'])
                     }
                 });
             }])
-        .controller('ManageProductsController', function ($scope, $http, commonFunctions, clientsService) {
-            $scope.init = function () {
-                $scope.checkProducts().then(null, function () {
-                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load product list"});
-                });
+        .controller('ManageProductsController', function ($scope, $http, commonFunctions, productsService, clientsService) {
 
+            $scope.$on('newProductList', function (event, data) {
+                $scope.products = data.products;
+            });
+            $scope.init = function () {
+                $scope.products = productsService.getProducts();
             };
             $scope.addProduct = function () {
                 if ($scope.newProduct && $scope.newProduct.name && $scope.newProduct.price) {
@@ -50,4 +51,4 @@ angular.module('myApp.manageProducts', ['ngRoute','myApp.constants'])
                 });
             };
             $scope.init();
-        }); 
+        });

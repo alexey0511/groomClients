@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.manageClients', ['ngRoute','myApp.constants'])
+angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
 
         .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/manageClients', {
@@ -17,10 +17,12 @@ angular.module('myApp.manageClients', ['ngRoute','myApp.constants'])
             }])
 
         .controller('ManageClientsController', function ($scope, commonFunctions, $http, $location, clientsService) {
+            $scope.$on('newClientsList', function (event, data) {
+                $scope.clientsList = data.clientsList;
+            });
             $scope.init = function () {
-                $scope.checkClients().then(null, function () {
-                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load client list"});
-                });
+                $scope.clientList = clientsService.getClientsList();
+
 
                 $scope.alerts = [];
                 $scope.closeAlert = function (index) {

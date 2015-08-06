@@ -37,17 +37,14 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                         }
                     }});
             }])
-        .controller('SingleVisitController', function ($scope, commonFunctions, $location, $routeParams, $http, clientsService) {
+        .controller('SingleVisitController', function ($scope, commonFunctions, visitsService, productsService,
+                storeService,staffService, $location, $routeParams, $http, clientsService) {
             $scope.init = function () {
-                $scope.checkClients();
-                $scope.checkProducts();
-                $scope.checkStaffList();
-                $scope.checkUsers();
-                $scope.checkPurchases().then(function () {
-                    $scope.getVisit();
-                }, function () {
-                    commonFunctions.customAlert("Haircut not found");
-                });
+                $scope.products = productsService.getProducts();
+                $scope.users = storeService.getStoreList();
+                $scope.staffList = staffService.getStaffList();
+                $scope.visits = visitsService.getVisits();
+                $scope.getVisit();
             };
 
             $scope.getVisit = function () {
@@ -91,19 +88,18 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
 
             $scope.init();
         })
-        .controller('VisitsController', function ($scope, $location) {
+        .controller('VisitsController', function ($scope, visitsService, $location) {
+            $scope.$on('newVisitsList', function (event, data) {
+                $scope.dataLoading = false;
+            });
+
             $scope.init = function () {
+
                 $scope.dateFrom = new Date();
                 $scope.dateTo = new Date();
                 $scope.dataLoading = true;
 
-                $scope.checkPurchases().then(
-                        function () {
-                            $scope.dataLoading = false;
-                        },
-                        function () {
-                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
-                        });
+                $scope.visits = visitsService.getVisits();
             };
 
             $scope.visitsDateFilter = function (visit) {

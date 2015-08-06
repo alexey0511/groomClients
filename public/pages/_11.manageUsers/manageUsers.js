@@ -1,8 +1,8 @@
 'use strict';
 
-angular.module('myApp.manageUsers', ['ngRoute','myApp.constants'])
+angular.module('myApp.manageUsers', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider','USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
                 $routeProvider.when('/manageusers', {
                     templateUrl: 'pages/_11.manageUsers/manageUsers.html',
                     controller: 'manageUsersController',
@@ -15,11 +15,13 @@ angular.module('myApp.manageUsers', ['ngRoute','myApp.constants'])
                     }
                 });
             }])
-        .controller('manageUsersController', function ($scope, $http, commonFunctions, clientsService) {
+        .controller('manageUsersController', function ($scope, $http, commonFunctions, storeService, clientsService) {
+            $scope.$on('newStoreList', function (event, data) {
+                $scope.users = data.storeList;
+            });
+
             $scope.init = function () {
-                $scope.checkUsers().then(null, function () {
-                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load client list"});
-                });
+                $scope.users = storeService.getStoreList();
 
                 $scope.alerts = [];
                 $scope.closeAlert = function (index) {

@@ -14,15 +14,26 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     }
                 });
             }])
-        .controller('SellController', function ($scope, $q, $http, cartService, commonFunctions, clientsService) {
+        .controller('SellController', function ($scope, staffService, $q, $http,
+cartService,storeService,productsService, commonFunctions, clientsService) {
             $scope.$on('barcodeInputClient', function (event, data) {
                 console.log("Data", data.client);
 //                $scope.makeClientActive(cartService.getClientActive);
                 $scope.$apply();
             });
+            $scope.$on('newStaffList', function (event, data) {
+                $scope.staffList = data.staffList;
+            });
+            $scope.$on('newProductList', function (event, data) {
+                $scope.products = data.products;
+            });
+            $scope.$on('newStoreList', function (event, data) {
+                $scope.users = data.storeList;
+            });
             $scope.init = function () {
                 $scope.showNewClient = false;
                 $scope.countPoints = false;
+                $scope.editPrice = false;
                 $scope.barberActive = {};
                 $scope.productActive = {};
                 $scope.newClient = {
@@ -31,21 +42,23 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 };
                 $scope.resetNameFilter();
                 $scope.resetCart();
-                $scope.checkUsers();
-                $scope.checkStaffList().then(function () {
-                    $scope.barberActive = $scope.staffList[0];
-                });
-                $scope.checkClients().then(function () {
-                    $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
-                    cartService.makeClientActive($scope.anonymousClient);
-                    $scope.nameFilter = {
-                        name: $scope.anonymousClient.name,
-                        phone: ''
-                    };
-                });
-                $scope.checkProducts().then(function () {
+                $scope.users = storeService.getStoreList();
+                $scope.staffList = staffService.getStaffList();
+                $scope.barberActive = $scope.staffList[0];
+                $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
+                cartService.makeClientActive($scope.anonymousClient);
+                $scope.nameFilter = {
+                    name: $scope.anonymousClient.name,
+                    phone: ''
+                };
+
+                $scope.products = productsService.getProducts();
+                if ($scope.products.length > 0) {
                     $scope.productActive = $scope.products[0];
-                });
+                }
+//                $scope.checkProducts().then(function () {
+//                    $scope.productActive = $scope.products[0];
+//                });
                 $scope.cartProducts = cartService.getProducts();
                 $scope.cartServices = cartService.getServices();
             };
@@ -119,19 +132,21 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             };
             $scope.addToCart = function () {
                 var client = cartService.getClientActive();
-                $scope.cart.client = {id: client.id, name: client.name, points: client.points, counters: client.counters};
-                if ($scope.productActive.type === 'service') {
-                    $scope.cartServices = cartService.getServices();
-                    if (client.counters.progress === 5 - cartService.getServices().length) {
-                        cartService.addService($scope.productActive.id, $scope.productActive.name,
-                                (Math.round(Number($scope.productActive.price) * 100 / 2) / 100), {id: $scope.barberActive.id, name: $scope.barberActive.name});
+                if ($scope.productActive.name && $scope.barberActive.name && client.name) {
+                    $scope.cart.client = {id: client.id, name: client.name, points: client.points, counters: client.counters};
+                    if ($scope.productActive.type === 'service') {
+                        $scope.cartServices = cartService.getServices();
+                        if (client.counters.progress === 5 - cartService.getServices().length) {
+                            cartService.addService($scope.productActive.id, $scope.productActive.name,
+                                    (Math.round(Number($scope.productActive.price) * 100 / 2) / 100), {id: $scope.barberActive.id, name: $scope.barberActive.name});
+                        } else {
+                            cartService.addService($scope.productActive.id, $scope.productActive.name,
+                                    $scope.productActive.price, {id: $scope.barberActive.id, name: $scope.barberActive.name});
+                        }
                     } else {
-                        cartService.addService($scope.productActive.id, $scope.productActive.name,
-                                $scope.productActive.price, {id: $scope.barberActive.id, name: $scope.barberActive.name});
+                        $scope.cartProducts = cartService.getProducts();
+                        cartService.addProduct($scope.productActive.id, $scope.productActive.name, $scope.productActive.price);
                     }
-                } else {
-                    $scope.cartProducts = cartService.getProducts();
-                    cartService.addProduct($scope.productActive.id, $scope.productActive.name, $scope.productActive.price);
                 }
             };
             $scope.remove = function (id) {
@@ -143,7 +158,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                     $scope.cart.subTotal += ($scope.cartProducts[i].price * $scope.cartProducts[i].qty);
                 }
                 for (var i = 0; i < $scope.cartServices.length; i++) {
-                    $scope.cart.subTotal += ($scope.cartServices[i].price);
+                    $scope.cart.subTotal += Number($scope.cartServices[i].price);
                 }
                 return $scope.cart.subTotal;
             };

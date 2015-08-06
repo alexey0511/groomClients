@@ -15,11 +15,13 @@ angular.module('myApp.manageStaff', ['ngRoute', 'myApp.constants'])
                     }
                 });
             }])
-        .controller('manageStaffController', function ($scope, $http, commonFunctions, clientsService) {
+        .controller('manageStaffController', function ($scope, $http, commonFunctions, staffService, clientsService) {
+            $scope.$on('newStaffList', function (event, data) {
+                $scope.staffList = data.staffList;
+            });
+
             $scope.init = function () {
-                $scope.checkStaffList().then(null, function () {
-                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load staff members"});
-                });
+                $scope.staffList = staffService.getStaffList();
 
                 $scope.alerts = [];
                 $scope.closeAlert = function (index) {

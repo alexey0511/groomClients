@@ -29,7 +29,7 @@
             <div class="col-md-3">
                 <div id="productItemBox">
                     <div ng-repeat="product in products track by $index" style="padding:10px;">
-                        <div class="btn btn-primary" title="{{product.description}}" style="width: 100%; height: 50px;" ng-class="checkProductActive(product.id)" ng-click="makeProductActive(product)">{{product.name}} : {{product.price | currency}}</div> 
+                        <div class="btn btn-primary" title="{{product.description}}" style="width: 100%; height: 50px;" ng-class="checkProductActive(product.id)" ng-click="makeProductActive(product)">{{product.name}} : {{product.price| currency}}</div> 
                     </div>
                 </div>
             </div>
@@ -97,21 +97,28 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="service in cartServices">
-                                <td>{{$index+1}}</td>
-                                <td>{{service.name}}</td>
-                                <td>{{service.barber.name}}</td>
-                                <td>1</td>
-                                <td>{{service.price}}</td>
-                                <td>{{service.price}}</td>
+                                <td style="vertical-align:middle">{{$index + 1}}</td>
+                                <td style="vertical-align:middle">{{service.name}}</td>
+                                <td style="vertical-align:middle">{{service.barber.name}}</td>
+                                <td style="vertical-align:middle">1</td>
+                                <td>
+                                    <div ng-show="!editPrice">{{service.price}}
+                                            <a ng-click="editPrice = !editPrice">
+                                                <i class="glyphicon glyphicon-edit"></i> change</a></div>
+                                    <div ng-show="editPrice">
+                                        <input  type="text" ng-model="service.price" value="{{service.price}}" style="width:50px;" />
+                                           <a ng-click="editPrice = !editPrice">   <i class="glyphicon glyphicon-ok"></i> ok</a></div>
+                                </td>
+                                <td style="vertical-align:middle">{{service.price}}</td>
                                 <td><button ng-click="remove(service.id)"
                                             class="btn btn-sm btn-warning">Remove</button></td>
                             </tr>
                             <tr ng-repeat="item in cartProducts">
-                                <td>{{$index+cartServices.length+1}}</td>
+                                <td>{{$index + cartServices.length + 1}}</td>
                                 <td>{{item.name}}</td>
                                 <td></td>
                                 <td>{{item.qty}}</td>
-                                <td>{{item.price}}</td>
+                                <td><input type="text" ng-model="item.price" value="{{item.price}}" /></td>
                                 <td>{{item.price * item.qty}}</td>
                                 <td><button ng-click="remove(item.id)"
                                             class="btn btn-sm btn-warning">Remove</button></td>

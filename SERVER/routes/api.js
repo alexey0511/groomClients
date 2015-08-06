@@ -19,14 +19,14 @@ router.route('/me')
                 location: req.user.location
             });
         });
-router.route('/getClients')
+
+router.route('/clients')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
             db.getAll("clients", function (result) {
                 res.json(result);
             });
-        });
-router.route('/clients')
+        })
         .post(bodyParserJson, function (req, res) {
             // get user from JWT and give readable value to the user
             var success = function (data) {
@@ -147,13 +147,6 @@ router.route('/orders')
             db.create("/orders", req.body, success);
         });
 // VISITS
-router.route('/getVisits')
-        .get(function (req, res) {
-            // get user from JWT and give readable value to the user
-            db.getAll("haircuts", function (result) {
-                res.json(result);
-            });
-        });
 router.route('/getDeletedVisits')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
@@ -170,6 +163,12 @@ router.route('/restoreVisit')
             db.create("/haircuts", req.body, success);
         });
 router.route('/visits')
+        .get(function (req, res) {
+            // get user from JWT and give readable value to the user
+            db.getAll("haircuts", function (result) {
+                res.json(result);
+            });
+        })
         .post(bodyParserJson, function (req, res) {
             // get user from JWT and give readable value to the user
             var success = function (data) {

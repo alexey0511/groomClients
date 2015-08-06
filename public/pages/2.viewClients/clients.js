@@ -24,13 +24,11 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
                         }
                     }});
             }])
-        .controller('SingleClientController', function ($scope, commonFunctions, $location, $routeParams, $http) {
+        .controller('SingleClientController', function ($scope, clientsService, commonFunctions, $location, $routeParams, $http) {
             $scope.init = function () {
-                $scope.checkClients().then(function () {
-                    $scope.getClient();
-                }, function () {
-                    commonFunctions.customAlert("Client not found");
-                });
+                $scope.clientList = clientsService.getClientsList();
+                $scope.getClient();
+
             };
 
             $scope.getClient = function () {
@@ -62,11 +60,6 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
             $scope.init = function () {
                 $scope.currentPage = 0;
                 $scope.pageSize = 50;
-                $scope.dataLoading = true;
-
-                $scope.checkClients().then(function () {
-                    $scope.dataLoading = false;
-                });
             };
 // BOF PAGINATION 
             $scope.numberOfPages = function () {

@@ -16,8 +16,7 @@ angular.module('myApp', [
     'ui.bootstrap',
     'myApp.version',
     'myApp.Authentication',
-    'myApp.txting'
-])
+    'myApp.txting'])
         .config(['$routeProvider', '$httpProvider', function ($routeProvider, $httpProvider) {
                 //                delete $httpProvider.defaults.headers.common['X-Requested-With'];
                 $httpProvider.interceptors.push(['$injector', function ($injector) {
@@ -28,7 +27,9 @@ angular.module('myApp', [
                 delete $httpProvider.defaults.headers.common['X-Requested-With'];
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
-        .controller('ApplicationController', function ($scope, AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions, clientsService, $http, $q, Session, USER_ROLES, AuthService, $rootScope, $cookieStore, $location) {
+        .controller('ApplicationController', function ($scope, $http, $q, Session, $rootScope, $cookieStore, $location,
+                productsService, staffService, storeService, visitsService, clientsService,
+                AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions) {
             $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
                 $scope.logout();
                 $location.path('/login');
@@ -37,8 +38,17 @@ angular.module('myApp', [
                 $scope.logout();
                 $location.path('/login');
             });
+            $scope.$on('newClientList', function (event, data) {
+                $scope.clientList = data.clientsList;
+            });
 
             $scope.init = function () {
+                productsService.initProducts();
+                staffService.staffListInit();
+                storeService.storeListInit();
+                visitsService.visitsInit();
+                clientsService.clientsListInit();
+
                 $scope.alerts = [];
                 $scope.clientList = [];
                 $scope.visits = [];
@@ -54,6 +64,7 @@ angular.module('myApp', [
                 if ($cookieStore.get('userInfo')) {
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
+                $scope.clientList = clientsService.getClientsList();
             };
             $scope.barcodeScan = function () {
                 var pressed = false;
@@ -66,7 +77,7 @@ angular.module('myApp', [
                         setTimeout(function () {
                             if (chars.length >= 5) {
                                 var barcode = chars.join("");
-//                var barcode = '15107';
+                                //                var barcode = '15107';
                                 console.log("Barcode Scanned: " + barcode);
                                 var client = clientsService.findClientByQrCode(barcode, $scope.clientList);
                                 console.log(client);
@@ -83,7 +94,6 @@ angular.module('myApp', [
                     pressed = true;
                 });
             };
-
             $scope.findClient = function (id) {
                 for (var i = 0, listLength = $scope.clientList.length; i < listLength; i++) {
                     if (typeof $scope.clientList[i].id === 'undefined') {
@@ -105,91 +115,9 @@ angular.module('myApp', [
                 $cookieStore.remove('userInfo');
                 Session.destroy();
             };
-            $scope.checkPurchases = function () {
-                var defer = $q.defer();
-                $http.get('/api/getVisits').then(
-                        function (response) {
-                            $scope.visits = response.data;
-                            defer.resolve();
-                        },
-                        function () {
-                            defer.reject();
-                        });
-                return defer.promise;
-            };
-            $scope.checkClients = function () {
-                $scope.loadingClients = true;
-                var defer = $q.defer();
-                if ($scope.clientList && $scope.clientList.length > 0) {
-                    $scope.barcodeScan();
-                    defer.resolve();
-                } else {
-                    $http.get('/api/getClients')
-                            .success(function (clientList) {
-                                $scope.clientList = clientList;
-                                $scope.barcodeScan();
-                                defer.resolve();
-                            })
-                            .error(function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load client list"});
-                                defer.reject();
-                            });
-                }
-                $scope.loadingClients = false;
-                return defer.promise;
-            };
-            $scope.checkUsers = function () {
-                var defer = $q.defer();
-                if (Array.isArray($scope.users && $scope.users.length > 0)) {
-                    defer.resolve();
-                } else {
-                    $http.get('/api/users')
-                            .success(function (response) {
-                                $scope.users = response;
-                                defer.resolve();
-                            })
-                            .error(function () {
-                                defer.reject();
-                            });
-                }
-                return defer.promise;
-            };
-            $scope.checkStaffList = function () {
-                var defer = $q.defer();
-                if (Array.isArray($scope.staffList && $scope.staffList.length > 0)) {
-                    defer.resolve();
-                } else {
-                    $http.get('/api/staff')
-                            .success(function (response) {
-                                $scope.staffList = response;
-                                defer.resolve();
-                            })
-                            .error(function () {
-                                defer.reject();
-                            });
-                }
-                return defer.promise;
-            };
-            $scope.checkProducts = function () {
-                var defer = $q.defer();
-                if (Array.isArray($scope.products && $scope.products.length > 0)) {
-                    defer.resolve();
-                } else {
-                    $http.get('/api/products')
-                            .success(function (response) {
-                                $scope.products = response;
-                                defer.resolve();
-                            })
-                            .error(function () {
-                                defer.reject();
-                            });
-                }
-                return defer.promise;
-            };
             $scope.recordVisit = function (visit) {
                 var clientIndex = clientsService.findClientIndex(visit.client.id, $scope.clientList);
-                $scope.increaseCount(clientIndex);
-// redeem right away - use half price haircut
+                $scope.increaseCount(clientIndex); // redeem right away - use half price haircut
                 if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
                     // Invoking immediatelly for now. ToDo: implement invoke on button click;
                     $scope.redeemCoupon(clientIndex);
@@ -256,7 +184,6 @@ angular.module('myApp', [
                     parseInt($scope.clientList[clientIndex].counters.visits);
                 }
             };
-
             $scope.init();
         })
         .service('commonFunctions', function ($modal, $q) {
@@ -294,8 +221,7 @@ angular.module('myApp', [
                         animation: true,
                         templateUrl: 'pages/partials/adminProof.html',
                         controller: 'adminProofController',
-                        size: 'sm'
-                    });
+                        size: 'sm'});
                     modalInstance.result.then(function (result) {
                         defer.resolve(result);
                     }, function () {
@@ -367,32 +293,30 @@ angular.module('myApp', [
                     capitalize($parse(attrs.ngModel)(scope)); // capitalize initial value
                 }
             };
-        })
-        .factory('authInterceptor', function ($rootScope, $q, $cookieStore, AUTH_EVENTS, $location) {
-            return {
-                request: function (config) {
-                    config.headers = config.headers || {};
-                    if ($cookieStore.get('userToken')) {
-                        config.headers.Authorization = 'Bearer ' + $cookieStore.get('userToken');
-                    }
-                    return config;
-                },
-                responseError: function (response) {
-                    $rootScope.$broadcast({
-                        401: AUTH_EVENTS.notAuthenticated,
-                        403: AUTH_EVENTS.notAuthorized,
-                        419: AUTH_EVENTS.sessionTimeout,
-                        440: AUTH_EVENTS.sessionTimeout
-                    }[response.status], response);
-                    return $q.reject(response);
-
-                    if (response.status === 401) {
-                        $location.path('/login');
-                    }
-                    return response || $q.when(response);
-                }
-            };
-        })
+        }).factory('authInterceptor', function ($rootScope, $q, $cookieStore, AUTH_EVENTS, $location) {
+    return {
+        request: function (config) {
+            config.headers = config.headers || {};
+            if ($cookieStore.get('userToken')) {
+                config.headers.Authorization = 'Bearer ' + $cookieStore.get('userToken');
+            }
+            return config;
+        },
+        responseError: function (response) {
+            $rootScope.$broadcast({
+                401: AUTH_EVENTS.notAuthenticated,
+                403: AUTH_EVENTS.notAuthorized,
+                419: AUTH_EVENTS.sessionTimeout,
+                440: AUTH_EVENTS.sessionTimeout
+            }[response.status], response);
+            return $q.reject(response);
+            if (response.status === 401) {
+                $location.path('/login');
+            }
+            return response || $q.when(response);
+        }
+    };
+})
         .factory('AuthService', function ($http, Session, $cookieStore, $rootScope, AUTH_EVENTS) {
             var authService = {};
             authService.login = function (credentials) {
@@ -453,8 +377,26 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('clientsService', function clientsService($http, $q) {
+        .factory('clientsService', function clientsService($http, $q, $rootScope) {
+            var clientsList = [];
             return {
+                getClientsList: function () {
+                    return clientsList;
+                },
+                clientsListInit: function () {
+                    $http.get('/api/clients')
+                            .success(function (response) {
+                                clientsList = response;
+                                localStorage.setItem('clientsList', JSON.stringify(clientsList));
+                                $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                            })
+                            .error(function () {
+                            });
+                    clientsList = JSON.parse(localStorage.getItem('clientsList'));
+                },
+                saveClient1: function (client) {
+
+                },
                 lastVisitInAnHour: function (client) {
                     if (new Date(client.lastVisit).getFullYear() === new Date().getFullYear()
                             && new Date(client.lastVisit).getMonth() === new Date().getMonth()
@@ -480,7 +422,6 @@ angular.module('myApp', [
                         }
                     }
                     return false;
-
                 },
                 saveClient: function (client, clientList) {
                     var defer = $q.defer();
@@ -496,7 +437,6 @@ angular.module('myApp', [
                         return defer.promise;
                     }
                     return false;
-
                 },
                 findClientIndex: function (id, clientList) {
                     for (var i = 0, l = clientList.length; i < l; i++) {
@@ -516,6 +456,95 @@ angular.module('myApp', [
                 }
             };
         })
+        .factory('productsService', function ($http, $rootScope) {
+            var products = [];
+            return {
+                getProducts: function () {
+                    return products;
+                },
+                initProducts: function () {
+                    $http.get('/api/products')
+                            .success(function (response) {
+                                products = response;
+                                localStorage.setItem('products', JSON.stringify(products));
+                                $rootScope.$broadcast('newProductsList', {products: products})
+                            })
+                            .error(function () {
+                            });
+                    products = JSON.parse(localStorage.getItem('products'));
+                },
+                saveProduct: function (product) {
+
+                }
+            };
+        })
+        .factory('staffService', function ($http, $rootScope) {
+            var staffList = [];
+            return {
+                getStaffList: function () {
+                    return staffList;
+                },
+                staffListInit: function () {
+                    $http.get('/api/staff')
+                            .success(function (response) {
+                                staffList = response;
+                                localStorage.setItem('staffList', JSON.stringify(staffList));
+                                $rootScope.$broadcast('newProductsList', {staffList: staffList});
+                            })
+                            .error(function () {
+                            });
+                    staffList = JSON.parse(localStorage.getItem('staffList'));
+                },
+                saveStaffMember: function (staffList) {
+
+                }
+            };
+        })
+        .factory('storeService', function ($http, $rootScope) {
+            var storeList = [];
+            return {
+                getStoreList: function () {
+                    return storeList;
+                },
+                storeListInit: function () {
+                    $http.get('/api/users')
+                            .success(function (response) {
+                                storeList = response;
+                                localStorage.setItem('storeList', JSON.stringify(storeList));
+                                $rootScope.$broadcast('newStoreList', {storeList: storeList});
+                            })
+                            .error(function () {
+                            });
+                    storeList = JSON.parse(localStorage.getItem('storeList'));
+                },
+                saveStore: function (storeList) {
+
+                }
+            };
+        })
+        .factory('visitsService', function ($http, $rootScope) {
+            var visitsList = [];
+            return {
+                getVisits: function () {
+                    return visitsList;
+                },
+                visitsInit: function () {
+                    $http.get('/api/visits')
+                            .success(function (response) {
+                                visitsList = response;
+                                localStorage.setItem('visitsList', JSON.stringify(visitsList));
+                                $rootScope.$broadcast('newVisitsList', {visitsList: visitsList});
+                            })
+                            .error(function () {
+                            });
+                    visitsList = JSON.parse(localStorage.getItem('visitsList'));
+                },
+                saveVisit: function (visit) {
+
+                }
+            };
+        })
+
 
         .run(['$rootScope', 'AUTH_EVENTS', 'AuthService', '$location',
             function ($rootScope, AUTH_EVENTS, AuthService, $location) {
