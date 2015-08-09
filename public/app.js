@@ -63,7 +63,7 @@ angular.module('myApp', [
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
                 $scope.clientList = clientsService.getClientsList();
-                
+
                 $scope.barcodeScan();
             };
             $scope.barcodeScan = function () {
@@ -383,7 +383,9 @@ angular.module('myApp', [
                     return clientsList;
                 },
                 clientsListInit: function () {
-                    clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
+                    if (localStorage.getItem('clientsList')) {
+                        clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
+                    }
                     $http.get('/api/clients')
                             .success(function (response) {
                                 if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
