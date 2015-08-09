@@ -2,11 +2,11 @@
 
 angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/visits', {
                     templateUrl: 'pages/6.viewVisits/visits.html',
                     controller: 'VisitsController',
-                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -18,7 +18,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     templateUrl: 'pages/6.viewVisits/visit.html',
                     controller: 'SingleVisitController',
                     data: {
-                        authorizedRoles: [USER_ROLES.admin]
+                        authorizedRoles: [store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -29,7 +29,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     templateUrl: 'pages/6.viewVisits/deletedVisits.html',
                     controller: 'RestoreDeletedVisitsController',
                     data: {
-                        authorizedRoles: [USER_ROLES.admin]
+                        authorizedRoles: [store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -39,9 +39,10 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
             }])
         .controller('SingleVisitController', function ($scope, commonFunctions, visitsService, productsService,
                 storeService, staffService, $location, $routeParams, $http, clientsService) {
+
             $scope.init = function () {
                 $scope.products = productsService.getProducts();
-                $scope.users = storeService.getStoreList();
+                $scope.stores = storeService.getStoreList();
                 $scope.staffList = staffService.getStaffList();
                 $scope.visits = visitsService.getVisits();
                 $scope.getVisit();
@@ -66,11 +67,13 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     var visitIndex = clientsService.findClientIndex(visitId, $scope.visits);
                     $http.post('/api/deleteVisit', $scope.visits[visitIndex]).then(
                             function () {
-                                $scope.visits.splice(visitIndex, 1);
+                                var removedVisit = $scope.visits.splice(visitIndex, 1);
+                                $scope.decreaseCount(removedVisit[0].client.id);
+                                //clientsService.updateClient()
                                 $location.path('/visits');
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the visit"});
+                                $scope.alerts[0] = {type: 'danger', msg: "Sorry, couldn't delete the visit"};
                             });
                 });
             };
@@ -90,6 +93,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
         })
         .controller('VisitsController', function ($scope, visitsService, $location) {
             $scope.$on('newVisitsList', function (event, data) {
+                console.log("new visis");
                 $scope.visits = data.visitsList;
                 if (!$scope.$$phase) {
                     $scope.$apply($scope.visits);
@@ -100,13 +104,8 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
             $scope.init = function () {
                 $scope.dateFrom = new Date();
                 $scope.dateTo = new Date();
-
+                $scope.visits = [];
                 $scope.visits = visitsService.getVisits();
-
-                $scope.$on('newVisitsList', function (event, data) {
-                    $scope.visits = data.visitsList;
-                    $scope.dataLoading = false;
-                });
 
             };
 
@@ -123,7 +122,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                 $location.path('/deletedVisits');
             };
             $scope.openVisit = function (id) {
-                if ($scope.currentUser.role === 'admin') {
+                if ($scope.currentstore.role === 'admin') {
                     $location.path("/visit/" + id);
                 }
             };

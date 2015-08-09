@@ -8,7 +8,7 @@ angular.module('myApp', [
     'myApp.visits',
     'myApp.newclient',
     'myApp.manageProducts',
-    'myApp.manageUsers',
+    'myApp.managestores',
     'myApp.manageClients',
     'myApp.manageStaff',
     'ngCookies',
@@ -27,7 +27,7 @@ angular.module('myApp', [
                 delete $httpProvider.defaults.headers.common['X-Requested-With'];
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
-        .controller('ApplicationController', function ($scope, $http, $q, Session, $rootScope, $cookieStore, $location,
+        .controller('ApplicationController', function ($scope, $http, $window, $q, Session, $rootScope, $cookieStore, $location,
                 productsService, staffService, storeService, visitsService, clientsService,
                 AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions) {
             $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
@@ -41,55 +41,62 @@ angular.module('myApp', [
             $scope.$on('newClientList', function (event, data) {
                 $scope.clientList = data.clientsList;
             });
-            $scope.init = function () {
+            $scope.$on(AUTH_EVENTS.loginSuccess, function () {
                 productsService.initProducts();
                 staffService.staffListInit();
                 storeService.storeListInit();
                 visitsService.visitsInit();
                 clientsService.clientsListInit();
+            });
+//            $scope.$on('newVisitsList', function (event, data) {
+//                console.log('new visits');
+//                $scope.visits = data.clientsList;
+//            });
+            $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
-                $scope.visits = [];
-                $scope.currentUser = null;
+                $scope.currentstore = null;
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
                 };
                 if ($location.path() !== '/login') {
                     $scope.isLoginPage = false;
+                    productsService.initProducts();
+                    staffService.staffListInit();
+                    storeService.storeListInit();
+                    visitsService.visitsInit();
+                    clientsService.clientsListInit();
                 } else {
                     $scope.isLoginPage = true;
                 }
-                if ($cookieStore.get('userInfo')) {
-                    $scope.setCurrentUser($cookieStore.get('userInfo'));
+                if ($cookieStore.get('storeInfo')) {
+                    $scope.setCurrentstore($cookieStore.get('storeInfo'));
                 }
                 $scope.clientList = clientsService.getClientsList();
-                
+
                 $scope.barcodeScan();
             };
             $scope.barcodeScan = function () {
                 var pressed = false;
                 var chars = [];
-                $(window).keypress(function (e) {
+                angular.element($window).on('keypress', function (e) {
                     if (e.which >= 48 && e.which <= 57) {
                         chars.push(String.fromCharCode(e.which));
                     }
                     if (pressed === false) {
                         setTimeout(function () {
-                            if (chars.length >= 5) {
+                            if (chars.length > 5) {
                                 var barcode = chars.join("");
-                                //                var barcode = '15107';
-                                console.log("Barcode Scanned: " + barcode);
                                 var client = clientsService.findClientByQrCode(barcode, $scope.clientList);
-                                console.log(client);
-                                console.log($location.path());
-                                $location.path('/sell');
-                                $scope.$broadcast('barcodeInputClient', {
-                                    client: client
-                                });
+                                if (client) {
+                                    $rootScope.$broadcast('barcodeInputClient', {client: client});
+                                } else {
+                                    commonFunctions.customAlert('not found');
+                                }
                             }
                             chars = [];
                             pressed = false;
-                        }, 500);
+                        }, 1000);
                     }
                     pressed = true;
                 });
@@ -105,14 +112,14 @@ angular.module('myApp', [
                 }
                 return null;
             };
-            $scope.setCurrentUser = function (user) {
-                $scope.currentUser = user;
-                $cookieStore.put('userInfo', user);
-                Session.create(1, user.user, user.role);
+            $scope.setCurrentstore = function (store) {
+                $scope.currentstore = store;
+                $cookieStore.put('storeInfo', store);
+                Session.create(1, store.store, store.role);
             };
             $scope.logout = function () {
-                delete $scope.currentUser;
-                $cookieStore.remove('userInfo');
+                delete $scope.currentstore;
+                $cookieStore.remove('storeInfo');
                 Session.destroy();
             };
             $scope.recordVisit = function (visit) {
@@ -154,20 +161,15 @@ angular.module('myApp', [
                     console.log("Error while adding...");
                 }
             };
-            $scope.decreaseCount = function (clientIndex) {
+            $scope.decreaseCount = function (clientId) {
+                var clientIndex = clientsService.findClientIndex(clientId, $scope.clientList)
                 if ($scope.clientList[clientIndex].counters.progress > 0) {
-                    $http.post('/api/removeLatestPurchase', {client: $scope.clientList[clientIndex]})
-                            .success(function () {
-                                if ($scope.clientList[clientIndex].counters.progress > 0) {
-                                    $scope.clientList[clientIndex].counters.progress -= 1;
-                                }
-                                if ($scope.clientList[clientIndex].counters.visits > 0) {
-                                    $scope.clientList[clientIndex].counters.visits -= 1;
-                                }
-                                // Update record in DB
-                                $http.post('/api/clients', $scope.clientList[clientIndex]);
-                            });
+                    $scope.clientList[clientIndex].counters.progress -= 1;
                 }
+                if ($scope.clientList[clientIndex].counters.visits > 0) {
+                    $scope.clientList[clientIndex].counters.visits -= 1;
+                }
+                clientsService.updateClient($scope.clientList[clientIndex]);
             };
             $scope.redeemCoupon = function (clientIndex) {
                 $scope.clientList[clientIndex].counters.progress = 0;
@@ -296,8 +298,8 @@ angular.module('myApp', [
     return {
         request: function (config) {
             config.headers = config.headers || {};
-            if ($cookieStore.get('userToken')) {
-                config.headers.Authorization = 'Bearer ' + $cookieStore.get('userToken');
+            if ($cookieStore.get('storeToken')) {
+                config.headers.Authorization = 'Bearer ' + $cookieStore.get('storeToken');
             }
             return config;
         },
@@ -323,24 +325,24 @@ angular.module('myApp', [
                         .post('/authenticate', credentials)
                         .then(function (res) {
                             res.data.token ?
-                                    $cookieStore.put('userToken', res.data.token)
-                                    : $cookieStore.remove('userToken');
+                                    $cookieStore.put('storeToken', res.data.token)
+                                    : $cookieStore.remove('storeToken');
                             return true;
                         }, function (res) {
                             $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
-                            $cookieStore.remove('userToken');
+                            $cookieStore.remove('storeToken');
                             return false;
                         });
             };
             authService.isAuthenticated = function () {
-                return !!Session.userId;
+                return !!Session.storeId;
             };
             authService.isAuthorized = function (authorizedRoles) {
                 if (!Array.isArray(authorizedRoles)) {
                     authorizedRoles = [authorizedRoles];
                 }
                 return (authService.isAuthenticated() &&
-                        authorizedRoles.indexOf(Session.userRole) !== -1);
+                        authorizedRoles.indexOf(Session.storeRole) !== -1);
             };
             authService.logout = function () {
 
@@ -348,24 +350,24 @@ angular.module('myApp', [
             return authService;
         })
         .service('Session', function () {
-            this.create = function (sessionId, userId, userRole) {
+            this.create = function (sessionId, storeId, storeRole) {
                 this.id = sessionId;
-                this.userId = userId;
-                this.userRole = userRole;
+                this.storeId = storeId;
+                this.storeRole = storeRole;
             };
             this.destroy = function () {
                 this.id = null;
-                this.userId = null;
-                this.userRole = null;
+                this.storeId = null;
+                this.storeRole = null;
             };
         })
         .factory('AuthResolver', function ($q, $rootScope, $location) {
             return {
                 resolve: function () {
                     var deferred = $q.defer();
-                    var unwatch = $rootScope.$watch('$$childHead.currentUser', function (currentUser) {
-                        if (angular.isDefined(currentUser) && currentUser) {
-                            deferred.resolve(currentUser);
+                    var unwatch = $rootScope.$watch('$$childHead.currentstore', function (currentstore) {
+                        if (angular.isDefined(currentstore) && currentstore) {
+                            deferred.resolve(currentstore);
                         } else {
                             deferred.reject();
                             $location.path('/login');
@@ -383,25 +385,40 @@ angular.module('myApp', [
                     return clientsList;
                 },
                 clientsListInit: function () {
-                    clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
-                    $http.get('/api/clients')
-                            .success(function (response) {
-                                if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
+                    if (localStorage.getItem('clientsList')) {
+                        clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
+                        $http.get('/api/clients')
+                                .success(function (response) {
+                                    if (!localStorage.getItem('clientsList').date) {
+
+                                    }
+                                    if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
+                                        clientsList = response.data;
+                                        localStorage.setItem('clientsList', JSON.stringify(response));
+                                        $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                                    } else {
+                                        // handle scenario when local version is newer
+                                        console.log('here', response.date, JSON.parse(localStorage.getItem('clientsList')).date);
+                                    }
+                                })
+                                .error(function () {
+                                });
+                    } else {
+                        $http.get('/api/clients')
+                                .success(function (response) {
                                     clientsList = response.data;
                                     localStorage.setItem('clientsList', JSON.stringify(response));
                                     $rootScope.$broadcast('newClientList', {clientsList: clientsList});
-                                } else {
-                                    // handle scenario when local version is newer
-                                    console.log('here', response.date, JSON.parse(localStorage.getItem('clientsList')).date);
-                                }
-                            })
-                            .error(function () {
-                            });
+                                })
+                                .error(function () {
+                                });
+                    }
                 },
                 addClient: function (client) {
-                    clientsList.push(client);
-                    localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
-                    $http.post('/api/clients', client).then(function () {
+                    $http.post('/api/clients', client).then(function (response) {
+                        clientsList.push(response.data);
+                        localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
+                        $rootScope.$broadcast('newClientList', {clientsList: clientsList});
                         commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
                     },
                             function () {
@@ -541,7 +558,7 @@ angular.module('myApp', [
                     return storeList;
                 },
                 storeListInit: function () {
-                    $http.get('/api/users')
+                    $http.get('/api/stores')
                             .success(function (response) {
                                 storeList = response;
                                 localStorage.setItem('storeList', JSON.stringify(storeList));
@@ -574,9 +591,9 @@ angular.module('myApp', [
                     visitsList = JSON.parse(localStorage.getItem('visitsList'));
                 },
                 addVisit: function (visit) {
+                    visit.date = visit.date.toISOString();
                     visitsList.push(visit);
                     localStorage.setItem('visitsList', JSON.stringify(visitsList));
-                    console.log('before');
                     $rootScope.$broadcast('newVisitsList', {visitsList: visitsList});
                 }
             };
@@ -593,10 +610,10 @@ angular.module('myApp', [
                         if (!AuthService.isAuthorized(authorizedRoles)) {
                             event.preventDefault();
                             if (AuthService.isAuthenticated()) {
-                                // user is not allowed
+                                // store is not allowed
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
                             } else {
-                                // user is not logged in
+                                // store is not logged in
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
                                 $location.path('/login');
                             }
@@ -620,9 +637,9 @@ angular.module('myApp.constants', [])
             notAuthenticated: 'auth-not-authenticated',
             notAuthorized: 'auth-not-authorized'
         })
-        .constant('USER_ROLES', {
+        .constant('store_ROLES', {
             all: '*',
-            user: 'user',
+            store: 'store',
             admin: 'admin'
         })
         .constant('appConfig', {
@@ -632,7 +649,7 @@ angular.module('myApp.constants', [])
             DbPath: 'hwhl_dev/collections/',
             DbUrl: 'https://api.mongolab.com/api/1/databases/',
             MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
-            MsgSvcUser: 'alexey0511',
+            MsgSvcstore: 'alexey0511',
             MsgSvcPwd: 'REHFEfEQEVBPPF',
             MsgSvcApiId: '3513880'
         });

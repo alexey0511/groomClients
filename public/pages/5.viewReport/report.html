@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-md-2">
                 <p>Select salon</p>
-                <select ng-model="selectedStore" ng-options="store.location as store.location for store in users"
+                <select ng-model="selectedStore" ng-options="store.location as store.location for store in stores"
                         ng-change="storeChange()">
                     <option value="">ALL</option>  
                 </select>   

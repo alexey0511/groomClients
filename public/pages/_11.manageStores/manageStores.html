@@ -1,38 +1,38 @@
 <div>
     <div>
-        <h1>STORE/USER MANAGEMENT</h1>
+        <h1>STORE/store MANAGEMENT</h1>
         <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div>
         <table class="table table-striped col-md-6" >
             <thead>
                 <tr>
-                    <th>#</th><th>Username</th><th>Password</th><th>Role</th><th>Location</th><th></th>
+                    <th>#</th><th>storename</th><th>Password</th><th>Role</th><th>Location</th><th></th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="store in users">
+                <tr ng-repeat="store in stores">
                     <td>{{$index+1}}</td>
-                    <td>{{store.username}}</td>
+                    <td>{{store.storename}}</td>
                     <td>{{store.password}}</td>
                     <td>{{store.role}}</td>
                     <td>{{store.location}}</td>
-                    <td><div class="btn btn-danger" ng-click="removeUser(store.id)">Remove</div></td>
+                    <td><div class="btn btn-danger" ng-click="removestore(store.id)">Remove</div></td>
                 </tr>
             </tbody>
             <tbody>
                 <tr>
                     <td><div >{{$index}}</div></td>
-                    <td><input type="text" ng-model="newUser.username">
+                    <td><input type="text" ng-model="newstore.storename">
                     </td>
-                    <td><input type="text" ng-model="newUser.password"></td>
-                    <td><select ng-model="newUser.role">
-                            <option value="user">user</option>
+                    <td><input type="text" ng-model="newstore.password"></td>
+                    <td><select ng-model="newstore.role">
+                            <option value="store">store</option>
                             <option value="admin">admin</option>
                         </select></td>
-                    <td><input type="text" ng-model="newUser.location"></td>
+                    <td><input type="text" ng-model="newstore.location"></td>
                     <td>
-                        <div class="btn btn-primary" ng-click="addUser()">Add User</div>
+                        <div class="btn btn-primary" ng-click="addstore()">Add store</div>
                     </td>
                 </tr>
             </tbody>

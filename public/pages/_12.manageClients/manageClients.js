@@ -2,11 +2,11 @@
 
 angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/manageClients', {
                     templateUrl: 'pages/_12.manageClients/manageClients.html',
                     controller: 'ManageClientsController',
-                    data: {authorizedRoles: [USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -40,7 +40,7 @@ angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
                                     if (status === 403) {
                                         commonFunctions.customAlert("You've provided wrong password!");
                                     } else {
-                                        $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the client"});
+                                        $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't delete the client"};
                                     }
                                 });
                     }

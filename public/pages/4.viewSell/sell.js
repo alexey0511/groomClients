@@ -1,11 +1,11 @@
 'use strict';
 angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/sell', {
                     templateUrl: 'pages/4.viewSell/sell.html',
                     controller: 'SellController',
-                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -17,7 +17,6 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
         .controller('SellController', function ($scope, staffService, $q, $http,
                 cartService, storeService, productsService, commonFunctions, clientsService) {
             $scope.$on('barcodeInputClient', function (event, data) {
-                console.log("Data", data.client);
                 $scope.makeClientActive(data.client);
                 $scope.$apply();
             });
@@ -28,7 +27,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.products = data.products;
             });
             $scope.$on('newStoreList', function (event, data) {
-                $scope.users = data.storeList;
+                $scope.stores = data.storeList;
             });
             $scope.init = function () {
                 $scope.showNewClient = false;
@@ -42,10 +41,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 };
                 $scope.resetNameFilter();
                 $scope.resetCart();
-                $scope.users = storeService.getStoreList();
+                $scope.stores = storeService.getStoreList();
                 $scope.staffList = staffService.getStaffList();
                 for (var i = 0; i < $scope.staffList.length; i++) {
-                    if ($scope.currentUser.location === 'Tinakori' && $scope.staffList[i].name === "Herman") {
+                    if ($scope.currentstore.location === 'Tinakori' && $scope.staffList[i].name === "Herman") {
                         $scope.barberActive = $scope.staffList[i];
                     }
                 }
@@ -213,7 +212,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                             $scope.newClient = {};
                         },
                         function () {
-                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
+                             $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't register the client"};
                         });
             };
             $scope.createClient = function (person) {
@@ -239,7 +238,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                                         defer.resolve(response.data);
                                     },
                                     function () {
-                                        $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
+                                         $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't load list of purchases"};
                                     });
                 } else {
                     defer.reject();
@@ -260,7 +259,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cart.payment = paymentType;
                 $scope.cart.products = $scope.cartProducts;
                 $scope.cart.services = $scope.cartServices;
-                $scope.cart.location = $scope.currentUser.location;
+                $scope.cart.location = $scope.currentstore.location;
                 $scope.cart.date = new Date();
                 $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
                         -= $scope.cart.points;
@@ -269,7 +268,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                         id: commonFunctions.generateGuid(),
                         barber: $scope.cart.services[i].barber,
                         product: {name: $scope.cart.services[i].name, price: $scope.cart.services[i].price},
-                        store: $scope.currentUser.location,
+                        store: $scope.currentstore.location,
                         date: $scope.cart.date,
                         client: {id: $scope.cart.client.id, name: $scope.cart.client.name},
                         paymentType: $scope.cart.payment
@@ -289,12 +288,12 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                         // restore data (because it's changing on a client without waiting for response)
                         $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
                                 += $scope.cartCached.points;
-                        $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
+                         $scope.alerts[0] ={type: 'danger', msg: "Problems with connecting to database"};
                     });
                 }, function () {
                     // restore cart data
                     $scope.cart = cartCached;
-                    $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
+                      $scope.alerts[0] = {type: 'danger', msg: "Problems with connecting to database"};
                 });
                 commonFunctions.makeSaleSound();
                 commonFunctions.customAlert("Thank you");

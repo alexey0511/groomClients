@@ -2,11 +2,11 @@
 
 angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/report', {
                     templateUrl: 'pages/5.viewReport/report.html',
                     controller: 'ReportController',
-                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -24,10 +24,10 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                     d.setDate(d.getDate() + 4 - (d.getDay() || 7));
                     return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
                 };
-                $scope.haircutsByUser = [];
+                $scope.haircutsBystore = [];
                 $scope.resetVars();
                 $scope.products = productsService.getProducts();
-                $scope.users = storeService.getStoreList();
+                $scope.stores = storeService.getStoreList();
                 $scope.staffList = staffService.getStaffList();
                 $scope.visits = visitsService.getVisits();
                 $scope.calcStats($scope.visits);
@@ -92,7 +92,7 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 $scope.stats.pMonth = 0;
                 $scope.stats.pYear = 0;
             };
-            // FILTER BY USER
+            // FILTER BY store
             $scope.storeChange = function () {
                 $scope.haircutsByStore = [];
                 if ($scope.selectedStore) {
@@ -146,7 +146,7 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
             // CALCULATE DATA
             $scope.calcStats = function (list) {
                 $scope.resetVars();
-                // change list to particular user
+                // change list to particular store
                 for (var i = 0, l = list.length; i < l; i++) {
                     var date, year, month, week, day;
                     date = new Date(list[i].date);

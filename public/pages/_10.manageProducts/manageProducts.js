@@ -2,11 +2,11 @@
 
 angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/manageproducts', {
                     templateUrl: 'pages/_10.manageProducts/manageProducts.html',
                     controller: 'ManageProductsController',
-                    data: {authorizedRoles: [USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -32,7 +32,7 @@ angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
                                 $scope.newProduct = {};
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the product"});
+                                 $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't add the product"};
                             });
                 }
             };
@@ -45,7 +45,7 @@ angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
                                     $scope.products.splice(productIndex, 1);
                                 },
                                 function () {
-                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the product"});
+                                    $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't delete the product"};
                                 });
                     }
                 });
