@@ -15,10 +15,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 });
             }])
         .controller('SellController', function ($scope, staffService, $q, $http,
-cartService,storeService,productsService, commonFunctions, clientsService) {
+                cartService, storeService, productsService, commonFunctions, clientsService) {
             $scope.$on('barcodeInputClient', function (event, data) {
                 console.log("Data", data.client);
-//                $scope.makeClientActive(cartService.getClientActive);
+                $scope.makeClientActive(data.client);
                 $scope.$apply();
             });
             $scope.$on('newStaffList', function (event, data) {
@@ -44,7 +44,14 @@ cartService,storeService,productsService, commonFunctions, clientsService) {
                 $scope.resetCart();
                 $scope.users = storeService.getStoreList();
                 $scope.staffList = staffService.getStaffList();
-                $scope.barberActive = $scope.staffList[0];
+                for (var i = 0; i < $scope.staffList.length; i++) {
+                    if ($scope.currentUser.location === 'Tinakori' && $scope.staffList[i].name === "Herman") {
+                        $scope.barberActive = $scope.staffList[i];
+                    }
+                }
+                if (Object.keys($scope.barberActive).length === 0) {
+                    $scope.barberActive = $scope.staffList[0];
+                }
                 $scope.anonymousClient = clientsService.getAnonymousClient($scope.clientList);
                 cartService.makeClientActive($scope.anonymousClient);
                 $scope.nameFilter = {

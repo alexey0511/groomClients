@@ -24,7 +24,7 @@ router.route('/clients')
         .get(function (req, res) {
             // get user from JWT and give readable value to the user
             db.getAll("clients", function (result) {
-                res.json(result);
+                res.json({data: result, date: new Date().getTime()});
             });
         })
         .post(bodyParserJson, function (req, res) {

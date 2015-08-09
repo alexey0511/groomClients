@@ -32,13 +32,8 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
             };
 
             $scope.getClient = function () {
-                $scope.client = $scope.findClient($routeParams.id);
+                $scope.client = clientsService.getClient($routeParams.id);
                 if ($scope.client) {
-                    $scope.client.createdOn = new Date($scope.client.createdOn);
-                    $scope.client.lastVisit = new Date($scope.client.lastVisit);
-                    $scope.client.counters.visits = Number($scope.client.counters.visits);
-                    $scope.client.counters.progress = Number($scope.client.counters.progress);
-                    $scope.client.counters.freeVisits = Number($scope.client.counters.freeVisits);
                     $http.get('/api/visits/' + $scope.client.id)
                             .success(function (response) {
                                 $scope.VisitsArray = response;
@@ -48,10 +43,9 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
                 }
             };
             $scope.updateClient = function () {
-                $http.post('/api/clients/' + $scope.client.id, $scope.client)
-                        .success(function (r) {
-                            $location.path("/clients");
-                        });
+                $scope.client.name = $scope.client.firstName + " " + $scope.client.lastName;
+                clientsService.updateClient($scope.client);
+                $location.path("/clients");
             };
 
             $scope.init();

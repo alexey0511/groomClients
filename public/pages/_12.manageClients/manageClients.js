@@ -17,12 +17,8 @@ angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
             }])
 
         .controller('ManageClientsController', function ($scope, commonFunctions, $http, $location, clientsService) {
-            $scope.$on('newClientsList', function (event, data) {
-                $scope.clientsList = data.clientsList;
-            });
             $scope.init = function () {
                 $scope.clientList = clientsService.getClientsList();
-
 
                 $scope.alerts = [];
                 $scope.closeAlert = function (index) {
@@ -37,6 +33,8 @@ angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
                         $http.post('/api/deleteClients', {adminProof: response, client: $scope.clientList[clientIndex]})
                                 .success(function () {
                                     $scope.clientList.splice(clientIndex, 1);
+                                    localStorage.setItem('clientsList', JSON.stringify({data: $scope.clientList, date: new Date().getTime()}));
+
                                 })
                                 .error(function (err, status) {
                                     if (status === 403) {
@@ -49,12 +47,7 @@ angular.module('myApp.manageClients', ['ngRoute', 'myApp.constants'])
                 });
             };
             $scope.openClient = function (id) {
-                var clientIndex;
-                clientIndex = clientsService.findClientIndex(id, $scope.clientList);
-                if (clientIndex || clientIndex === 0) {
-                    var id = $scope.clientList[clientIndex].id;
-                    $location.path("/clients/" + id);
-                }
+                $location.path("/clients/" + id);
             };
 
             $scope.init();

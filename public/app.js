@@ -41,14 +41,12 @@ angular.module('myApp', [
             $scope.$on('newClientList', function (event, data) {
                 $scope.clientList = data.clientsList;
             });
-
             $scope.init = function () {
                 productsService.initProducts();
                 staffService.staffListInit();
                 storeService.storeListInit();
                 visitsService.visitsInit();
                 clientsService.clientsListInit();
-
                 $scope.alerts = [];
                 $scope.clientList = [];
                 $scope.visits = [];
@@ -65,6 +63,8 @@ angular.module('myApp', [
                     $scope.setCurrentUser($cookieStore.get('userInfo'));
                 }
                 $scope.clientList = clientsService.getClientsList();
+                
+                $scope.barcodeScan();
             };
             $scope.barcodeScan = function () {
                 var pressed = false;
@@ -121,7 +121,6 @@ angular.module('myApp', [
                 if ($scope.clientList[clientIndex].counters.progress === DEFAULT_SETTINGS.numberVisits) {
                     // Invoking immediatelly for now. ToDo: implement invoke on button click;
                     $scope.redeemCoupon(clientIndex);
-                    visit.product.price = Math.round(Number(visit.product.price) * 100 / 2) / 100;
                 }
                 $http.post('/api/visits', visit)
                         .success(function () {
@@ -131,7 +130,7 @@ angular.module('myApp', [
                             }
                             $scope.clientList[clientIndex].lastVisit = new Date();
                             $scope.clientList[clientIndex].visits.push(clientVisitId);
-                            $scope.visits.push(visit);
+                            visitsService.addVisit(visit);
                             $http.post('/api/clients', $scope.clientList[clientIndex])
                                     .success(function () {
                                     })
@@ -377,25 +376,60 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('clientsService', function clientsService($http, $q, $rootScope) {
+        .factory('clientsService', function clientsService($http, $q, $rootScope, commonFunctions) {
             var clientsList = [];
             return {
                 getClientsList: function () {
                     return clientsList;
                 },
                 clientsListInit: function () {
+                    clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
                     $http.get('/api/clients')
                             .success(function (response) {
-                                clientsList = response;
-                                localStorage.setItem('clientsList', JSON.stringify(clientsList));
-                                $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                                if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
+                                    clientsList = response.data;
+                                    localStorage.setItem('clientsList', JSON.stringify(response));
+                                    $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                                } else {
+                                    // handle scenario when local version is newer
+                                    console.log('here', response.date, JSON.parse(localStorage.getItem('clientsList')).date);
+                                }
                             })
                             .error(function () {
                             });
-                    clientsList = JSON.parse(localStorage.getItem('clientsList'));
                 },
-                saveClient1: function (client) {
-
+                addClient: function (client) {
+                    clientsList.push(client);
+                    localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
+                    $http.post('/api/clients', client).then(function () {
+                        commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
+                    },
+                            function () {
+                                $rootScope.$broadcast('AddClientFailure', function () {
+                                });
+                            });
+                },
+                updateClient: function (client) {
+                    for (var i = 0; i < clientsList.length; i++) {
+                        if (client.id === clientsList[i].id) {
+                            client._id = clientsList[i]._id;
+                            clientsList[i] = client;
+                            localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
+                            $http.post('/api/clients', client).then(function () {
+                            });
+                        }
+                    }
+                },
+                getClient: function (clientId) {
+                    for (var i = 0; i < clientsList.length; i++) {
+                        if (clientId === clientsList[i].id) {
+                            clientsList[i].createdOn = new Date(clientsList[i].createdOn);
+                            clientsList[i].lastVisit = new Date(clientsList[i].lastVisit);
+                            clientsList[i].counters.visits = Number(clientsList[i].counters.visits);
+                            clientsList[i].counters.progress = Number(clientsList[i].counters.progress);
+                            return clientsList[i];
+                        }
+                    }
                 },
                 lastVisitInAnHour: function (client) {
                     if (new Date(client.lastVisit).getFullYear() === new Date().getFullYear()
@@ -539,8 +573,11 @@ angular.module('myApp', [
                             });
                     visitsList = JSON.parse(localStorage.getItem('visitsList'));
                 },
-                saveVisit: function (visit) {
-
+                addVisit: function (visit) {
+                    visitsList.push(visit);
+                    localStorage.setItem('visitsList', JSON.stringify(visitsList));
+                    console.log('before');
+                    $rootScope.$broadcast('newVisitsList', {visitsList: visitsList});
                 }
             };
         })

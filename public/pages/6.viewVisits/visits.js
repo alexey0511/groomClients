@@ -18,7 +18,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     templateUrl: 'pages/6.viewVisits/visit.html',
                     controller: 'SingleVisitController',
                     data: {
-                        authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                        authorizedRoles: [USER_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -29,7 +29,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     templateUrl: 'pages/6.viewVisits/deletedVisits.html',
                     controller: 'RestoreDeletedVisitsController',
                     data: {
-                        authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                        authorizedRoles: [USER_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -38,7 +38,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     }});
             }])
         .controller('SingleVisitController', function ($scope, commonFunctions, visitsService, productsService,
-                storeService,staffService, $location, $routeParams, $http, clientsService) {
+                storeService, staffService, $location, $routeParams, $http, clientsService) {
             $scope.init = function () {
                 $scope.products = productsService.getProducts();
                 $scope.users = storeService.getStoreList();
@@ -90,16 +90,24 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
         })
         .controller('VisitsController', function ($scope, visitsService, $location) {
             $scope.$on('newVisitsList', function (event, data) {
-                $scope.dataLoading = false;
+                $scope.visits = data.visitsList;
+                if (!$scope.$$phase) {
+                    $scope.$apply($scope.visits);
+                    $scope.dataLoading = false;
+                }
             });
 
             $scope.init = function () {
-
                 $scope.dateFrom = new Date();
                 $scope.dateTo = new Date();
-                $scope.dataLoading = true;
 
                 $scope.visits = visitsService.getVisits();
+
+                $scope.$on('newVisitsList', function (event, data) {
+                    $scope.visits = data.visitsList;
+                    $scope.dataLoading = false;
+                });
+
             };
 
             $scope.visitsDateFilter = function (visit) {
@@ -115,7 +123,9 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                 $location.path('/deletedVisits');
             };
             $scope.openVisit = function (id) {
-                $location.path("/visit/" + id);
+                if ($scope.currentUser.role === 'admin') {
+                    $location.path("/visit/" + id);
+                }
             };
 
             $scope.init();
