@@ -386,8 +386,16 @@ angular.module('myApp', [
                     if (localStorage.getItem('clientsList')) {
                         clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
                     }
+                    var clientListObject = JSON.parse(localStorage.getItem('clientsList'));
+                    if (!clientListObject.date) {
+                        clientListObject.date = new Date();
+                        localStorage.setItem('clientsList', JSON.stringify(clientListObject));
+                    }
                     $http.get('/api/clients')
                             .success(function (response) {
+                                if (!localStorage.getItem('clientsList').date) {
+
+                                }
                                 if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
                                     clientsList = response.data;
                                     localStorage.setItem('clientsList', JSON.stringify(response));
