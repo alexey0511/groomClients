@@ -385,28 +385,32 @@ angular.module('myApp', [
                 clientsListInit: function () {
                     if (localStorage.getItem('clientsList')) {
                         clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
-                    }
-                    var clientListObject = JSON.parse(localStorage.getItem('clientsList'));
-                    if (!clientListObject.hasOwnProperty('date')) {
-                        clientListObject.date = new Date().getTime();
-                        localStorage.setItem('clientsList', JSON.stringify(clientListObject));
-                    }
-                    $http.get('/api/clients')
-                            .success(function (response) {
-                                if (!localStorage.getItem('clientsList').date) {
+                        $http.get('/api/clients')
+                                .success(function (response) {
+                                    if (!localStorage.getItem('clientsList').date) {
 
-                                }
-                                if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
+                                    }
+                                    if (response.date >= JSON.parse(localStorage.getItem('clientsList')).date) {
+                                        clientsList = response.data;
+                                        localStorage.setItem('clientsList', JSON.stringify(response));
+                                        $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                                    } else {
+                                        // handle scenario when local version is newer
+                                        console.log('here', response.date, JSON.parse(localStorage.getItem('clientsList')).date);
+                                    }
+                                })
+                                .error(function () {
+                                });
+                    } else {
+                        $http.get('/api/clients')
+                                .success(function (response) {
                                     clientsList = response.data;
                                     localStorage.setItem('clientsList', JSON.stringify(response));
                                     $rootScope.$broadcast('newClientList', {clientsList: clientsList});
-                                } else {
-                                    // handle scenario when local version is newer
-                                    console.log('here', response.date, JSON.parse(localStorage.getItem('clientsList')).date);
-                                }
-                            })
-                            .error(function () {
-                            });
+                                })
+                                .error(function () {
+                                });
+                    }
                 },
                 addClient: function (client) {
                     clientsList.push(client);
