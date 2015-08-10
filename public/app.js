@@ -387,8 +387,8 @@ angular.module('myApp', [
                         clientsList = JSON.parse(localStorage.getItem('clientsList')).data;
                     }
                     var clientListObject = JSON.parse(localStorage.getItem('clientsList'));
-                    if (!clientListObject.date) {
-                        clientListObject.date = new Date();
+                    if (!clientListObject.hasOwnProperty('date')) {
+                        clientListObject.date = new Date().getTime();
                         localStorage.setItem('clientsList', JSON.stringify(clientListObject));
                     }
                     $http.get('/api/clients')
