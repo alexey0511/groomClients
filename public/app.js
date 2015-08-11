@@ -413,8 +413,8 @@ angular.module('myApp', [
                     }
                 },
                 addClient: function (client) {
-                    $http.post('/api/clients', client).then(function () {
-                        clientsList.push(client);
+                    $http.post('/api/clients', client).then(function (savedClient) {
+                        clientsList.push(savedClient);
                         localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
                         commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
                     },
