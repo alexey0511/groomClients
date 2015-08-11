@@ -53,7 +53,6 @@ router.route('/deleteClients')
                     var success = function (data) {
                         data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
                     };
-                    console.log(req.body);
                     db.deleteRecord("clients", req.body.client._id.$oid, success);
                 } else {
                     res.status(403).send(false);
