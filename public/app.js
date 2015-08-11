@@ -416,6 +416,7 @@ angular.module('myApp', [
                     $http.post('/api/clients', client).then(function (savedClient) {
                         clientsList.push(savedClient);
                         localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
+                                 $rootScope.$broadcast('newClientList', {clientsList: clientsList});
                         commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
                     },
                             function () {
