@@ -413,10 +413,10 @@ angular.module('myApp', [
                     }
                 },
                 addClient: function (client) {
-                    $http.post('/api/clients', client).then(function (savedClient) {
-                        clientsList.push(savedClient);
+                    $http.post('/api/clients', client).then(function (response) {
+                        clientsList.push(response.data);
                         localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
-                                 $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+ $rootScope.$broadcast('newClientList', {clientsList: clientsList});
                         commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
                     },
                             function () {
@@ -591,7 +591,6 @@ angular.module('myApp', [
                 addVisit: function (visit) {
                     visitsList.push(visit);
                     localStorage.setItem('visitsList', JSON.stringify(visitsList));
-                    console.log('before');
                     $rootScope.$broadcast('newVisitsList', {visitsList: visitsList});
                 }
             };
