@@ -53,7 +53,7 @@
                             <input type="text" ng-model="nameFilter.name" placeholder="Name"/>
                         </div>
                         <div class="col-md-1" ng-show="nameFilter.name" style="margin:5px 0px 0px -30px;">
-                            <i class="glyphicon glyphicon-remove" ng-click="nameFilter.name = ''"></i>
+                            <i class="glyphicon glyphicon-remove" ng-click="nameFilter = {name:'',phone:''}"></i>
                         </div>
                         <div class="col-md-5"><input type="text" ng-model="nameFilter.phone" placeholder="Phone"/></div>
                     </div>

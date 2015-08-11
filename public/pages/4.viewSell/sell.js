@@ -80,6 +80,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 if ($scope.nameFilter.name === '' && $scope.nameFilter.phone === '') {
                     return client;
                 }
+                console.log($scope.nameFilter);
             };
 
             $scope.resetCart = function () {
