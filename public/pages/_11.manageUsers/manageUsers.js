@@ -38,7 +38,7 @@ angular.module('myApp.manageUsers', ['ngRoute', 'myApp.constants'])
                                 $scope.newUser = {};
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the user"});
+                                $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't add the user"};
                             });
                 }
             };
@@ -51,7 +51,7 @@ angular.module('myApp.manageUsers', ['ngRoute', 'myApp.constants'])
                                     $scope.users.splice(userIndex, 1);
                                 })
                                 .error(function () {
-                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the user"});
+                                   $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't delete the user"};
                                 });
                     }
                 });

@@ -14,6 +14,7 @@
     "html5-boilerplate": "~5.2.x",
     "angular-qr": "~0.0.x",
     "angular-qrcode": "~5.1.x",
-    "angular-ui":"latest"
+    "angular-ui":"latest",
+    "angular-bootstrap":"latest"
   }
 }

@@ -32,7 +32,7 @@ angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
                                 $scope.newProduct = {};
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the product"});
+                                 $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't add the product"};
                             });
                 }
             };
@@ -45,7 +45,7 @@ angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
                                     $scope.products.splice(productIndex, 1);
                                 },
                                 function () {
-                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the product"});
+                                    $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't delete the product"};
                                 });
                     }
                 });

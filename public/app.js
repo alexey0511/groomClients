@@ -27,7 +27,7 @@ angular.module('myApp', [
                 delete $httpProvider.defaults.headers.common['X-Requested-With'];
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
-        .controller('ApplicationController', function ($scope, $http, $q, Session, $rootScope, $cookieStore, $location,
+        .controller('ApplicationController', function ($scope, $http, $window, $q, Session, $rootScope, $cookieStore, $location,
                 productsService, staffService, storeService, visitsService, clientsService,
                 AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions) {
             $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
@@ -69,27 +69,24 @@ angular.module('myApp', [
             $scope.barcodeScan = function () {
                 var pressed = false;
                 var chars = [];
-                $(window).keypress(function (e) {
+                angular.element($window).on('keypress', function (e) {
                     if (e.which >= 48 && e.which <= 57) {
                         chars.push(String.fromCharCode(e.which));
                     }
                     if (pressed === false) {
                         setTimeout(function () {
-                            if (chars.length >= 5) {
+                            if (chars.length > 5) {
                                 var barcode = chars.join("");
-                                //                var barcode = '15107';
-                                console.log("Barcode Scanned: " + barcode);
                                 var client = clientsService.findClientByQrCode(barcode, $scope.clientList);
-                                console.log(client);
-                                console.log($location.path());
-                                $location.path('/sell');
-                                $scope.$broadcast('barcodeInputClient', {
-                                    client: client
-                                });
+                                if (client) {
+                                    $rootScope.$broadcast('barcodeInputClient', {client: client});
+                                } else {
+                                    commonFunctions.customAlert('not found');
+                                }
                             }
                             chars = [];
                             pressed = false;
-                        }, 500);
+                        }, 1000);
                     }
                     pressed = true;
                 });
@@ -416,7 +413,7 @@ angular.module('myApp', [
                     $http.post('/api/clients', client).then(function (response) {
                         clientsList.push(response.data);
                         localStorage.setItem('clientsList', JSON.stringify({data: clientsList, date: new Date().getTime()}));
- $rootScope.$broadcast('newClientList', {clientsList: clientsList});
+                        $rootScope.$broadcast('newClientList', {clientsList: clientsList});
                         commonFunctions.customAlert("Thank you for registering with GROOM Barbers");
                     },
                             function () {

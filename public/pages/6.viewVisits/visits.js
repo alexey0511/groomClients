@@ -70,7 +70,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                                 $location.path('/visits');
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the visit"});
+                                 $scope.alerts[0] = {type: 'danger', msg: "Sorry, couldn't delete the visit"} ;
                             });
                 });
             };

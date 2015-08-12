@@ -38,7 +38,7 @@ angular.module('myApp.manageStaff', ['ngRoute', 'myApp.constants'])
                                 $scope.newStaff = {};
                             },
                             function () {
-                                $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't add the staff members"});
+                                $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't add the staff members"};
                             });
                 }
             };
@@ -51,7 +51,7 @@ angular.module('myApp.manageStaff', ['ngRoute', 'myApp.constants'])
                                     $scope.staffList.splice(staffIndex, 1);
                                 })
                                 .error(function () {
-                                    $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't delete the staff"});
+                                    $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't delete the staff"};
                                 });
                     }
                 });

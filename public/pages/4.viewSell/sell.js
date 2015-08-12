@@ -17,7 +17,6 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
         .controller('SellController', function ($scope, staffService, $q, $http,
                 cartService, storeService, productsService, commonFunctions, clientsService) {
             $scope.$on('barcodeInputClient', function (event, data) {
-                console.log("Data", data.client);
                 $scope.makeClientActive(data.client);
                 $scope.$apply();
             });
@@ -213,7 +212,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                             $scope.newClient = {};
                         },
                         function () {
-                            $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't register the client"});
+                             $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't register the client"};
                         });
             };
             $scope.createClient = function (person) {
@@ -239,7 +238,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                                         defer.resolve(response.data);
                                     },
                                     function () {
-                                        $scope.alerts.push({type: 'danger', msg: "Sorry, couldn't load list of purchases"});
+                                         $scope.alerts[0] ={type: 'danger', msg: "Sorry, couldn't load list of purchases"};
                                     });
                 } else {
                     defer.reject();
@@ -289,12 +288,12 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                         // restore data (because it's changing on a client without waiting for response)
                         $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
                                 += $scope.cartCached.points;
-                        $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
+                         $scope.alerts[0] ={type: 'danger', msg: "Problems with connecting to database"};
                     });
                 }, function () {
                     // restore cart data
                     $scope.cart = cartCached;
-                    $scope.alerts.push({type: 'danger', msg: "Problems with connecting to database"});
+                      $scope.alerts[0] = {type: 'danger', msg: "Problems with connecting to database"};
                 });
                 commonFunctions.makeSaleSound();
                 commonFunctions.customAlert("Thank you");
