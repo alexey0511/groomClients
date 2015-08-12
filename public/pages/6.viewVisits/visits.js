@@ -39,6 +39,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
             }])
         .controller('SingleVisitController', function ($scope, commonFunctions, visitsService, productsService,
                 storeService, staffService, $location, $routeParams, $http, clientsService) {
+
             $scope.init = function () {
                 $scope.products = productsService.getProducts();
                 $scope.users = storeService.getStoreList();
@@ -66,11 +67,13 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
                     var visitIndex = clientsService.findClientIndex(visitId, $scope.visits);
                     $http.post('/api/deleteVisit', $scope.visits[visitIndex]).then(
                             function () {
-                                $scope.visits.splice(visitIndex, 1);
+                                var removedVisit = $scope.visits.splice(visitIndex, 1);
+                                $scope.decreaseCount(removedVisit[0].client.id);
+                                //clientsService.updateClient()
                                 $location.path('/visits');
                             },
                             function () {
-                                 $scope.alerts[0] = {type: 'danger', msg: "Sorry, couldn't delete the visit"} ;
+                                $scope.alerts[0] = {type: 'danger', msg: "Sorry, couldn't delete the visit"};
                             });
                 });
             };
@@ -90,6 +93,7 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
         })
         .controller('VisitsController', function ($scope, visitsService, $location) {
             $scope.$on('newVisitsList', function (event, data) {
+                console.log("new visis");
                 $scope.visits = data.visitsList;
                 if (!$scope.$$phase) {
                     $scope.$apply($scope.visits);
@@ -100,13 +104,8 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
             $scope.init = function () {
                 $scope.dateFrom = new Date();
                 $scope.dateTo = new Date();
-
+                $scope.visits = [];
                 $scope.visits = visitsService.getVisits();
-
-                $scope.$on('newVisitsList', function (event, data) {
-                    $scope.visits = data.visitsList;
-                    $scope.dataLoading = false;
-                });
 
             };
 

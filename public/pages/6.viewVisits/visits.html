@@ -22,12 +22,10 @@
                             <img ng-src="./img/progress.gif" alt="loading" width="100px" height="100px"/>
                         </td>
                     </tr>
-                    <tr  ng-click='openVisit(visit.id)' ng-repeat="visit in visits| filter: visitsDateFilter | orderBy : 'date':true" >
+                    <tr  ng-click='openVisit(visit.id)' ng-repeat="visit in visits| filter: visitsDateFilter | orderBy:'-date'" >
                         <td>{{$index + 1}}</td>
-                        <td>{{visit.date| date:'d MMMM yyyy H:m'}} </td>
-                        <td>
-                            {{visit.client.name}}
-                        </td>
+                        <td>{{visit.date| date:'d MMMM yyyy HH:mm'}} </td>
+                        <td ng-model="visit">{{visit.client.name}}</td>
                         <td>{{visit.barber.name}}</td>
                         <td>{{visit.product.name}}</td>
                         <td>{{visit.product.price}}</td>

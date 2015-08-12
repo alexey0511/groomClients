@@ -27,7 +27,8 @@ var dbService = (function (appConfig) {
     function findRecord(table, query, success) {
         var method = "GET";
         var endpoint = appConfig.DbPath + table;
-        var data = {'q': query, 'apiKey': appConfig.DbId};
+        var a = JSON.stringify(query);
+        var data = {'q': a, 'apiKey': appConfig.DbId};
         sendRequest(endpoint, method, data, success);
     }
     function login(query, success) {

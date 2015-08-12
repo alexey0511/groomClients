@@ -18,7 +18,7 @@ app.all('*', function (req, res, next) {
     res.header('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,DELETE');
     res.header("Access-Control-Allow-Headers", "Content-Type");
     if ('OPTIONS' == req.method) {
-        return res.send(200);
+        return res.status(200).send({});
     }
     next();
 });
@@ -34,11 +34,11 @@ apiRoute = require('./SERVER/routes/api');
 app.use('/api', expressJwt({secret: secret}));
 app.use(function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
-        res.send(401, {error: 'invalid token...'});
+        res.status(401).send({error: 'invalid token...'});
     } else {
         console.log(err.name);
-        res.send(403, {error: 'unauthorised access'});
-        
+        res.status(403).send({error: 'unauthorised access'});
+
     }
 });
 app.use('/api', apiRoute);

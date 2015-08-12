@@ -81,7 +81,6 @@ router.route('/deleteProducts')
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
             };
-            console.log(req.body);
             db.deleteRecord("products", req.body._id.$oid, success);
         });
 router.route('/staff')
@@ -203,10 +202,16 @@ router.route('/visits/:id')
 router.route('/deleteVisit')
         .post(bodyParserJson, function (req, res) {
             var success = function (data) {
-                data ? res.send(data) : res.status(400).send({message: "Failed.."});
+                data ? res.send(data) : res.status(403).send({message: "Failed.."});
             };
             db.create('deletedVisits', req.body, function () {
-                db.deleteRecord("haircuts", req.body._id.$oid, success);
+                db.findRecord("haircuts", {id: req.body.id}, function (data) {
+                    if (data.length === 1) {
+                        db.deleteRecord("haircuts", data[0]._id.$oid, success);
+                    } else {
+                        res.status(403).send({message: "Failed.."});
+                    }
+                });
             });
         });
 router.route('/removeLatestPurchase')

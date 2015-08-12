@@ -32,25 +32,23 @@
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/clients">Clients</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/sell">Sales</a></li>
                         <li ng-if="currentUser.role === 'user' || currentUser.role === 'admin'"><a href="#/visits">Haircuts</a></li>
-                        <li class="dropdown" ng-if="currentUser.role === 'admin'">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports<span class="caret"></span></a>
+                        <li dropdown ng-if="currentUser.role === 'admin'">
+                            <a dropdown-toggle>Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/report">Report</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/message">Txt messaging</a></li>
                             </ul>
                         </li>
-                        <li class="dropdown" ng-if="currentUser.role === 'admin'">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
-                            <ul class="dropdown-menu">
-                                <li role="separator" class="divider"></li>
+                        <li ng-if="currentUser.role === 'admin'" dropdown>
+                                <a dropdown-toggle>
+                                    Admin <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu" role="menu" >
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageproducts">Manage Products</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageusers">Manage Users</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/managestaff">Manage Staff</a></li>
                                 <li ng-if="currentUser.role === 'admin'"><a href="#/manageClients">Manage Clients</a></li>
-                                <li role="separator" class="divider"></li>
-                                <!--                                In NEXT Version-->
-                                <!--                                <li ng-if="currentUser.role === 'user'"><a href="#/settings">Settings</a></li>-->
-                            </ul>
+                                </ul>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">

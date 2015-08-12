@@ -41,21 +41,31 @@ angular.module('myApp', [
             $scope.$on('newClientList', function (event, data) {
                 $scope.clientList = data.clientsList;
             });
-            $scope.init = function () {
+            $scope.$on(AUTH_EVENTS.loginSuccess, function () {
                 productsService.initProducts();
                 staffService.staffListInit();
                 storeService.storeListInit();
                 visitsService.visitsInit();
                 clientsService.clientsListInit();
+            });
+//            $scope.$on('newVisitsList', function (event, data) {
+//                console.log('new visits');
+//                $scope.visits = data.clientsList;
+//            });
+            $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
-                $scope.visits = [];
                 $scope.currentUser = null;
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
                 };
                 if ($location.path() !== '/login') {
                     $scope.isLoginPage = false;
+                    productsService.initProducts();
+                    staffService.staffListInit();
+                    storeService.storeListInit();
+                    visitsService.visitsInit();
+                    clientsService.clientsListInit();
                 } else {
                     $scope.isLoginPage = true;
                 }
@@ -151,20 +161,15 @@ angular.module('myApp', [
                     console.log("Error while adding...");
                 }
             };
-            $scope.decreaseCount = function (clientIndex) {
+            $scope.decreaseCount = function (clientId) {
+                var clientIndex = clientsService.findClientIndex(clientId, $scope.clientList)
                 if ($scope.clientList[clientIndex].counters.progress > 0) {
-                    $http.post('/api/removeLatestPurchase', {client: $scope.clientList[clientIndex]})
-                            .success(function () {
-                                if ($scope.clientList[clientIndex].counters.progress > 0) {
-                                    $scope.clientList[clientIndex].counters.progress -= 1;
-                                }
-                                if ($scope.clientList[clientIndex].counters.visits > 0) {
-                                    $scope.clientList[clientIndex].counters.visits -= 1;
-                                }
-                                // Update record in DB
-                                $http.post('/api/clients', $scope.clientList[clientIndex]);
-                            });
+                    $scope.clientList[clientIndex].counters.progress -= 1;
                 }
+                if ($scope.clientList[clientIndex].counters.visits > 0) {
+                    $scope.clientList[clientIndex].counters.visits -= 1;
+                }
+                clientsService.updateClient($scope.clientList[clientIndex]);
             };
             $scope.redeemCoupon = function (clientIndex) {
                 $scope.clientList[clientIndex].counters.progress = 0;
@@ -586,6 +591,7 @@ angular.module('myApp', [
                     visitsList = JSON.parse(localStorage.getItem('visitsList'));
                 },
                 addVisit: function (visit) {
+                    visit.date = visit.date.toISOString();
                     visitsList.push(visit);
                     localStorage.setItem('visitsList', JSON.stringify(visitsList));
                     $rootScope.$broadcast('newVisitsList', {visitsList: visitsList});
