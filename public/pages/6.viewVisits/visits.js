@@ -93,7 +93,6 @@ angular.module('myApp.visits', ['ngRoute', 'myApp.constants'])
         })
         .controller('VisitsController', function ($scope, visitsService, $location) {
             $scope.$on('newVisitsList', function (event, data) {
-                console.log("new visis");
                 $scope.visits = data.visitsList;
                 if (!$scope.$$phase) {
                     $scope.$apply($scope.visits);

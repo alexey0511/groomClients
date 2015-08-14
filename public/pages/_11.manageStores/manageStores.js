@@ -1,10 +1,10 @@
-'use strict';
+'use strict'
 
 angular.module('myApp.managestores', ['ngRoute', 'myApp.constants'])
 
         .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/managestores', {
-                    templateUrl: 'pages/_11.managestores/managestores.html',
+                    templateUrl: 'pages/_11.manageStores/manageStores.html',
                     controller: 'managestoresController',
                     data: {authorizedRoles: [store_ROLES.admin]
                     },
@@ -18,6 +18,7 @@ angular.module('myApp.managestores', ['ngRoute', 'myApp.constants'])
         .controller('managestoresController', function ($scope, $http, commonFunctions, storeService, clientsService) {
             $scope.$on('newStoreList', function (event, data) {
                 $scope.stores = data.storeList;
+                console.log('delete');
             });
 
             $scope.init = function () {
