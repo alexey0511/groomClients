@@ -1,10 +1,10 @@
 'use strict';
 angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'myApp.constants'])
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider, user_ROLES) {
                 $routeProvider.when('/clients', {
                     templateUrl: 'pages/2.viewClients/clients.html',
                     controller: 'ClientsController',
-                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
+                    data: {authorizedRoles: [user_ROLES.user, user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -16,7 +16,7 @@ angular.module('myApp.clients', ['ngRoute', 'myApp.dialogs', 'ui.bootstrap', 'my
                     templateUrl: 'pages/2.viewClients/client.html',
                     controller: 'SingleClientController',
                     data: {
-                        authorizedRoles: [store_ROLES.store, store_ROLES.admin]
+                        authorizedRoles: [user_ROLES.user, user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {

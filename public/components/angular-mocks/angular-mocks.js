@@ -226,7 +226,7 @@ angular.mock.$ExceptionHandlerProvider = function() {
    * @param {string} mode Mode of operation, defaults to `rethrow`.
    *
    *   - `log`: Sometimes it is desirable to test that an error is thrown, for this case the `log`
-   *            mode stores an array of errors in `$exceptionHandler.errors`, to allow later
+   *            mode users an array of errors in `$exceptionHandler.errors`, to allow later
    *            assertion of them. See {@link ngMock.$log#assertEmpty assertEmpty()} and
    *            {@link ngMock.$log#reset reset()}
    *   - `rethrow`: If any errors are passed to the handler in tests, it typically means that there

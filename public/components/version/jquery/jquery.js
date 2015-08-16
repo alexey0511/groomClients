@@ -1957,7 +1957,7 @@ Expr = Sizzle.selectors = {
 
 						start = [ forward ? parent.firstChild : parent.lastChild ];
 
-						// non-xml :nth-child(...) stores cache data on `parent`
+						// non-xml :nth-child(...) users cache data on `parent`
 						if ( forward && useCache ) {
 							// Seek `elem` from a previously-cached index
 							outerCache = parent[ expando ] || (parent[ expando ] = {});
@@ -5662,7 +5662,7 @@ jQuery.fn.extend({
 					doc = scripts[ scripts.length - 1 ].ownerDocument;
 
 					// Reenable scripts
-					jQuery.map( scripts, restoreScript );
+					jQuery.map( scripts, reuserscript );
 
 					// Evaluate executable scripts on first document insertion
 					for ( i = 0; i < hasScripts; i++ ) {
@@ -5904,7 +5904,7 @@ function disableScript( elem ) {
 	elem.type = (elem.getAttribute("type") !== null) + "/" + elem.type;
 	return elem;
 }
-function restoreScript( elem ) {
+function reuserscript( elem ) {
 	var match = rscriptTypeMasked.exec( elem.type );
 
 	if ( match ) {

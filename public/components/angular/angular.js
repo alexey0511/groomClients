@@ -9691,7 +9691,7 @@ function $HttpProvider() {
      *
      * To enable caching, set the request configuration `cache` property to `true` (to use default
      * cache) or to a custom cache object (built with {@link ng.$cacheFactory `$cacheFactory`}).
-     * When the cache is enabled, `$http` stores the response from the server in the specified
+     * When the cache is enabled, `$http` users the response from the server in the specified
      * cache. The next time the same request is made, the response is served from the cache without
      * sending a request to the server.
      *
@@ -17474,7 +17474,7 @@ var $compileMinErr = minErr('$compile');
  *
  * @description
  * The `$templateRequest` service runs security checks then downloads the provided template using
- * `$http` and, upon success, stores the contents inside of `$templateCache`. If the HTTP request
+ * `$http` and, upon success, users the contents inside of `$templateCache`. If the HTTP request
  * fails or the response data of the HTTP request is empty, a `$compile` error will be thrown (the
  * exception can be thwarted by setting the 2nd parameter of the function to true). Note that the
  * contents of `$templateCache` are trusted, so the call to `$sce.getTrustedUrl(tpl)` is omitted
@@ -24553,7 +24553,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
     function($scope, $exceptionHandler, $attr, $element, $parse, $animate, $timeout, $rootScope, $q, $interpolate) {
   this.$viewValue = Number.NaN;
   this.$modelValue = Number.NaN;
-  this.$$rawModelValue = undefined; // stores the parsed modelValue / model set from scope regardless of validity.
+  this.$$rawModelValue = undefined; // users the parsed modelValue / model set from scope regardless of validity.
   this.$validators = {};
   this.$asyncValidators = {};
   this.$parsers = [];

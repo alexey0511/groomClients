@@ -30,11 +30,11 @@
                         <td>{{visit.product.name}}</td>
                         <td>{{visit.product.price}}</td>
                         <td>{{visit.paymentType}}</td>
-                        <td>{{visit.store}}</td>
+                        <td>{{visit.user}}</td>
                     </tr>
                 <tbody>
             </table>
-            <div ng-if="currentstore.role === 'admin'" class="btn btn-success" ng-click="restoreDeletedVisitPage()">Restore deleted visit(s)</div>
+            <div ng-if="currentuser.role === 'admin'" class="btn btn-success" ng-click="restoreDeletedVisitPage()">Restore deleted visit(s)</div>
         </div>
     </div>
 </div>

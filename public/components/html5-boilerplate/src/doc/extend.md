@@ -8,7 +8,7 @@ Boilerplate even better. We don't want to include it all by default, as
 not everything fits with everyone's needs.
 
 
-* [App Stores](#app-stores)
+* [App users](#app-users)
 * [DNS prefetching](#dns-prefetching)
 * [Google Universal Analytics](#google-universal-analytics)
 * [Internet Explorer](#internet-explorer)
@@ -20,7 +20,7 @@ not everything fits with everyone's needs.
 * [Web Apps](#web-apps)
 
 
-## App Stores
+## App users
 
 ### Install a Chrome Web Store app
 

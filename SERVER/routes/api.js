@@ -12,9 +12,9 @@ config = require('../config.js');
 db = new db(config[env]);
 router.route('/me')
         .get(bodyParserJson,function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             res.json({
-                store: req.user.storename,
+                user: req.user.username,
                 role: req.user.role,
                 location: req.user.location
             });
@@ -22,13 +22,13 @@ router.route('/me')
 
 router.route('/clients')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("clients", function (result) {
                 res.json({data: result, date: new Date().getTime()});
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
             };
@@ -37,7 +37,7 @@ router.route('/clients')
 router.route('/clients/:id')
         .post(bodyParserJson, function (req, res) {
             if (req.param("id") === req.body.id.toString()) {
-                // get store from JWT and give readable value to the store
+                // get user from JWT and give readable value to the user
                 var success = function (data) {
                     data ? res.send(data) : res.status(400).send({message: "Failed retrieve record"});
                 };
@@ -48,8 +48,8 @@ router.route('/clients/:id')
         });
 router.route('/deleteClients')
         .post(bodyParserJson, function (req, res) {
-            db.findRecord("stores", {storename: req.store.storename}, function (store) {
-                if (store[0].password === req.body.adminProof) {
+            db.findRecord("users", {username: req.user.username}, function (user) {
+                if (user[0].password === req.body.adminProof) {
                     var success = function (data) {
                         data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
                     };
@@ -62,13 +62,13 @@ router.route('/deleteClients')
         });
 router.route('/products')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("products", function (result) {
                 res.json(result);
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
             };
@@ -77,7 +77,7 @@ router.route('/products')
 
 router.route('/deleteProducts')
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
             };
@@ -85,46 +85,46 @@ router.route('/deleteProducts')
         });
 router.route('/staff')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("staff", function (result) {
                 res.json(result);
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.json(data) : res.status(400).json({message: "Failed to create a record"});
             };
             db.create("/staff", req.body, success);
         });
-router.route('/stores')
+router.route('/users')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
-            db.getAll("stores", function (result) {
-                var stores = [];
+            // get user from JWT and give readable value to the user
+            db.getAll("users", function (result) {
+                var users = [];
                 for (var i = 0, l = result.length; i < l; i++) {
-                    stores.push({storename: result[i].storename,
+                    users.push({username: result[i].username,
                         password: '', role: result[i].role, _id: result[i]._id,
                         id: result[i].id, location: result[i].location});
                 }
-                res.json(stores);
+                res.json(users);
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.json(data) : res.status(400).json({message: "Failed to create a record"});
             };
-            db.create("/stores", req.body, success);
+            db.create("/users", req.body, success);
         });
-router.route('/deletestores')
+router.route('/deleteusers')
         .post(bodyParserJson, function (req, res) {
-            db.findRecord("stores", {storename: req.store.storename}, function (store) {
-                if (store[0].password === req.body.adminProof) {
+            db.findRecord("users", {username: req.user.username}, function (user) {
+                if (user[0].password === req.body.adminProof) {
                     var success = function (data) {
                         data ? res.send(data) : res.status(400).send({message: "Failed to delete a record"});
                     };
-                    db.deleteRecord("stores", req.body.store._id.$oid, success);
+                    db.deleteRecord("users", req.body.user._id.$oid, success);
                 } else {
                     res.status(403).send(false);
                 }
@@ -132,13 +132,13 @@ router.route('/deletestores')
         });
 router.route('/orders')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("orders", function (result) {
                 res.json(result);
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
             };
@@ -147,14 +147,14 @@ router.route('/orders')
 // VISITS
 router.route('/getDeletedVisits')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("deletedVisits", function (result) {
                 res.json(result);
             });
         });
 router.route('/restoreVisit')
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to restore visit"});
             };
@@ -162,13 +162,13 @@ router.route('/restoreVisit')
         });
 router.route('/visits')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("haircuts", function (result) {
                 res.json(result);
             });
         })
         .post(bodyParserJson, function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             var success = function (data) {
                 data ? res.send(data) : res.status(400).send({message: "Failed to create a record"});
             };
@@ -177,7 +177,7 @@ router.route('/visits')
 router.route('/visit/:id')
         .post(bodyParserJson, function (req, res) {
             if (req.param("id") === req.body.id.toString()) {
-                // get store from JWT and give readable value to the store
+                // get user from JWT and give readable value to the user
                 var success = function (data) {
                     data ? res.send(data) : res.status(400).send({message: "Failed retrieve record"});
                 };
@@ -188,7 +188,7 @@ router.route('/visit/:id')
         });
 router.route('/visits/:id')
         .get(function (req, res) {
-            // get store from JWT and give readable value to the store
+            // get user from JWT and give readable value to the user
             db.getAll("haircuts", function (result) {
                 var visits = [];
                 for (var i = 0, l = result.length; i < l; i++) {
@@ -219,7 +219,7 @@ router.route('/removeLatestPurchase')
             var audit = {
                 url: req.url,
                 method: req.method,
-                store: req.store,
+                user: req.user,
                 body: req.body
             };
             db.create("audit", audit, function () {

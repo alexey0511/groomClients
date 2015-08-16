@@ -27,33 +27,33 @@
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav" ng-show="currentstore" ng-cloak>
-                        <li ng-if="currentstore.role === 'store' || currentstore.role === 'admin'"><a href="#/newclient">New Client</a></li> 
-                        <li ng-if="currentstore.role === 'store' || currentstore.role === 'admin'"><a href="#/clients">Clients</a></li>
-                        <li ng-if="currentstore.role === 'store' || currentstore.role === 'admin'"><a href="#/sell">Sales</a></li>
-                        <li ng-if="currentstore.role === 'store' || currentstore.role === 'admin'"><a href="#/visits">Haircuts</a></li>
-                        <li dropdown ng-if="currentstore.role === 'admin'">
+                    <ul class="nav navbar-nav" ng-show="currentuser" ng-cloak>
+                        <li ng-if="currentuser.role === 'user' || currentuser.role === 'admin'"><a href="#/newclient">New Client</a></li> 
+                        <li ng-if="currentuser.role === 'user' || currentuser.role === 'admin'"><a href="#/clients">Clients</a></li>
+                        <li ng-if="currentuser.role === 'user' || currentuser.role === 'admin'"><a href="#/sell">Sales</a></li>
+                        <li ng-if="currentuser.role === 'user' || currentuser.role === 'admin'"><a href="#/visits">Haircuts</a></li>
+                        <li dropdown ng-if="currentuser.role === 'admin'">
                             <a dropdown-toggle>Reports<span class="caret"></span></a>
                             <ul class="dropdown-menu" >
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/report">Report</a></li>
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/message">Txt messaging</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/report">Report</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/message">Txt messaging</a></li>
                             </ul>
                         </li>
-                        <li ng-if="currentstore.role === 'admin'" dropdown>
+                        <li ng-if="currentuser.role === 'admin'" dropdown>
                                 <a dropdown-toggle>
                                     Admin <span class="caret"></span>
                                 </a>
                                 <ul class="dropdown-menu" role="menu" >
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/manageproducts">Manage Products</a></li>
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/managestores">Manage stores</a></li>
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/managestaff">Manage Staff</a></li>
-                                <li ng-if="currentstore.role === 'admin'"><a href="#/manageClients">Manage Clients</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/manageproducts">Manage Products</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/manageUsers">Manage users</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/managestaff">Manage Staff</a></li>
+                                <li ng-if="currentuser.role === 'admin'"><a href="#/manageClients">Manage Clients</a></li>
                                 </ul>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <div style="float:right; margin: 20px" ng-if="currentstore" class="ng-cloak">You're at {{ currentstore.location}}
+                            <div style="float:right; margin: 20px" ng-if="currentuser" class="ng-cloak">You're at {{ currentuser.location}}
                                 <a href="#/login" ng-click="logout()">Logout</a>
                             </div>
                         </li>
@@ -92,7 +92,7 @@
         <script src="pages/6.viewVisits/visits.js"></script>
         <script src="pages/9.txtClients/txtClients.js"></script>
         <script src="pages/_10.manageProducts/manageProducts.js"></script>
-        <script src="pages/_11.manageStores/manageStores.js"></script>
+        <script src="pages/_11.manageUsers/manageUsers.js"></script>
         <script src="pages/_12.manageClients/manageClients.js"></script>
         <script src="pages/_13.manageBarbers/manageBarbers.js"></script>
         <script src="pages/partials/dialogsModule.js"></script>

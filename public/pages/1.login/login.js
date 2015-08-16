@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('myApp.Authentication', ['myApp.constants'])
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider) {
                 $routeProvider.when('/login', {
                     templateUrl: 'pages/1.login/login.html',
                     controller: 'LoginController'
@@ -13,7 +13,7 @@ angular.module('myApp.Authentication', ['myApp.constants'])
             });
 
             $scope.credentials = {
-                storename: '',
+                username: '',
                 password: ''
             };
             $scope.login = function (credentials) {
@@ -21,10 +21,10 @@ angular.module('myApp.Authentication', ['myApp.constants'])
                     $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
                     if (response === true) {
                         $http.get('/api/me').then(function (response) {
-                            $scope.setCurrentstore(response.data);
+                            $scope.setCurrentuser(response.data);
                             $location.path('/clients');
                         }, function (error) {
-                            $scope.setCurrentstore(null);
+                            $scope.setCurrentuser(null);
                              $scope.alerts[0] = {type: 'danger', msg: "Can't load your profile"};
                         });
                     }

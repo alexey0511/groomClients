@@ -1,0 +1,41 @@
+<div>
+    <div>
+        <h1>user/user MANAGEMENT</h1>
+        <alert ng-repeat="alert in alerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div>
+        <table class="table table-striped col-md-6" >
+            <thead>
+                <tr>
+                    <th>#</th><th>username</th><th>Password</th><th>Role</th><th>Location</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="user in users">
+                    <td>{{$index+1}}</td>
+                    <td>{{user.username}}</td>
+                    <td>{{user.password}}</td>
+                    <td>{{user.role}}</td>
+                    <td>{{user.location}}</td>
+                    <td><div class="btn btn-danger" ng-click="removeuser(user.id)">Remove</div></td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td><div >{{$index}}</div></td>
+                    <td><input type="text" ng-model="newuser.username">
+                    </td>
+                    <td><input type="text" ng-model="newuser.password"></td>
+                    <td><select ng-model="newuser.role">
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select></td>
+                    <td><input type="text" ng-model="newuser.location"></td>
+                    <td>
+                        <div class="btn btn-primary" ng-click="adduser()">Add user</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

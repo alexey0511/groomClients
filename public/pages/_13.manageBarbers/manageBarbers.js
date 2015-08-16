@@ -2,11 +2,11 @@
 
 angular.module('myApp.manageStaff', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider, user_ROLES) {
                 $routeProvider.when('/managestaff', {
                     templateUrl: 'pages/_13.manageBarbers/manageBarbers.html',
                     controller: 'manageStaffController',
-                    data: {authorizedRoles: [store_ROLES.admin]
+                    data: {authorizedRoles: [user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -46,7 +46,7 @@ angular.module('myApp.manageStaff', ['ngRoute', 'myApp.constants'])
                 commonFunctions.adminProof().then(function (response) {
                     if (response) {
                         var staffIndex = clientsService.findClientIndex(id, $scope.staffList);
-                        $http.post('/api/deletestores', {adminProof: response, store: store[0]})
+                        $http.post('/api/deleteusers', {adminProof: response, user: user[0]})
                                 .success(function () {
                                     $scope.staffList.splice(staffIndex, 1);
                                 })

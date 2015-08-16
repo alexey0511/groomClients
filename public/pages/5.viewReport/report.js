@@ -2,11 +2,11 @@
 
 angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider, user_ROLES) {
                 $routeProvider.when('/report', {
                     templateUrl: 'pages/5.viewReport/report.html',
                     controller: 'ReportController',
-                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
+                    data: {authorizedRoles: [user_ROLES.user, user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -16,7 +16,7 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 });
             }])
         .controller('ReportController', function ($scope, $http, visitsService, productsService,
-                storeService, staffService) {
+                userservice, staffService) {
             $scope.init = function () {
                 Date.prototype.getWeekNumber = function () {
                     var d = new Date(+this);
@@ -24,10 +24,10 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                     d.setDate(d.getDate() + 4 - (d.getDay() || 7));
                     return Math.ceil((((d - new Date(d.getFullYear(), 0, 1)) / 8.64e7) + 1) / 7);
                 };
-                $scope.haircutsBystore = [];
+                $scope.haircutsByuser = [];
                 $scope.resetVars();
                 $scope.products = productsService.getProducts();
-                $scope.stores = storeService.getStoreList();
+                $scope.users = userservice.getuserList();
                 $scope.staffList = staffService.getStaffList();
                 $scope.visits = visitsService.getVisits();
                 $scope.calcStats($scope.visits);
@@ -92,25 +92,25 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
                 $scope.stats.pMonth = 0;
                 $scope.stats.pYear = 0;
             };
-            // FILTER BY store
-            $scope.storeChange = function () {
-                $scope.haircutsByStore = [];
-                if ($scope.selectedStore) {
+            // FILTER BY user
+            $scope.userChange = function () {
+                $scope.haircutsByuser = [];
+                if ($scope.selecteduser) {
                     if ($scope.haircutsByBarber && $scope.haircutsByBarber.length > 0) {
                         for (var i = 0, l = $scope.haircutsByBarber.length; i < l; i++) {
-                            if ($scope.haircutsByBarber[i].store === $scope.selectedStore) {
-                                $scope.haircutsByStore.push($scope.haircutsByBarber[i]);
+                            if ($scope.haircutsByBarber[i].user === $scope.selecteduser) {
+                                $scope.haircutsByuser.push($scope.haircutsByBarber[i]);
                             }
                         }
                     } else {
                         for (var i = 0, l = $scope.visits.length; i < l; i++) {
-                            if ($scope.visits[i].store === $scope.selectedStore) {
-                                $scope.haircutsByStore.push($scope.visits[i]);
+                            if ($scope.visits[i].user === $scope.selecteduser) {
+                                $scope.haircutsByuser.push($scope.visits[i]);
                             }
                         }
                     }
-                    if ($scope.haircutsByStore.length > 0) {
-                        $scope.calcStats($scope.haircutsByStore);
+                    if ($scope.haircutsByuser.length > 0) {
+                        $scope.calcStats($scope.haircutsByuser);
                     } else {
                         $scope.resetVars();
                     }
@@ -121,10 +121,10 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
             $scope.barberChange = function () {
                 $scope.haircutsByBarber = [];
                 if ($scope.selectedBarber) {
-                    if ($scope.haircutsByStore && $scope.haircutsByStore.length > 0) {
-                        for (var i = 0, l = $scope.haircutsByStore.length; i < l; i++) {
-                            if ($scope.haircutsByStore[i].barber.name === $scope.selectedBarber) {
-                                $scope.haircutsByBarber.push($scope.haircutsByStore[i]);
+                    if ($scope.haircutsByuser && $scope.haircutsByuser.length > 0) {
+                        for (var i = 0, l = $scope.haircutsByuser.length; i < l; i++) {
+                            if ($scope.haircutsByuser[i].barber.name === $scope.selectedBarber) {
+                                $scope.haircutsByBarber.push($scope.haircutsByuser[i]);
                             }
                         }
                     } else {
@@ -146,7 +146,7 @@ angular.module('myApp.report', ['ngRoute', 'myApp.constants'])
             // CALCULATE DATA
             $scope.calcStats = function (list) {
                 $scope.resetVars();
-                // change list to particular store
+                // change list to particular user
                 for (var i = 0, l = list.length; i < l; i++) {
                     var date, year, month, week, day;
                     date = new Date(list[i].date);

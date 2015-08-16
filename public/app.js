@@ -8,7 +8,7 @@ angular.module('myApp', [
     'myApp.visits',
     'myApp.newclient',
     'myApp.manageProducts',
-    'myApp.managestores',
+    'myApp.manageUsers',
     'myApp.manageClients',
     'myApp.manageStaff',
     'ngCookies',
@@ -28,7 +28,7 @@ angular.module('myApp', [
                 $routeProvider.otherwise({redirectTo: '/clients'});
             }])
         .controller('ApplicationController', function ($scope, $http, $window, $q, Session, $rootScope, $cookieStore, $location,
-                productsService, staffService, storeService, visitsService, clientsService,
+                productsService, staffService, userservice, visitsService, clientsService,
                 AUTH_EVENTS, DEFAULT_SETTINGS, commonFunctions) {
             $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
                 $scope.logout();
@@ -44,7 +44,7 @@ angular.module('myApp', [
             $scope.$on(AUTH_EVENTS.loginSuccess, function () {
                 productsService.initProducts();
                 staffService.staffListInit();
-                storeService.storeListInit();
+                userservice.userListInit();
                 visitsService.visitsInit();
                 clientsService.clientsListInit();
             });
@@ -55,7 +55,7 @@ angular.module('myApp', [
             $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
-                $scope.currentstore = null;
+                $scope.currentuser = null;
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
                 };
@@ -63,14 +63,14 @@ angular.module('myApp', [
                     $scope.isLoginPage = false;
                     productsService.initProducts();
                     staffService.staffListInit();
-                    storeService.storeListInit();
+                    userservice.userListInit();
                     visitsService.visitsInit();
                     clientsService.clientsListInit();
                 } else {
                     $scope.isLoginPage = true;
                 }
-                if ($cookieStore.get('storeInfo')) {
-                    $scope.setCurrentstore($cookieStore.get('storeInfo'));
+                if ($cookieStore.get('userInfo')) {
+                    $scope.setCurrentuser($cookieStore.get('userInfo'));
                 }
                 $scope.clientList = clientsService.getClientsList();
 
@@ -112,14 +112,14 @@ angular.module('myApp', [
                 }
                 return null;
             };
-            $scope.setCurrentstore = function (store) {
-                $scope.currentstore = store;
-                $cookieStore.put('storeInfo', store);
-                Session.create(1, store.store, store.role);
+            $scope.setCurrentuser = function (user) {
+                $scope.currentuser = user;
+                $cookieStore.put('userInfo', user);
+                Session.create(1, user.user, user.role);
             };
             $scope.logout = function () {
-                delete $scope.currentstore;
-                $cookieStore.remove('storeInfo');
+                delete $scope.currentuser;
+                $cookieStore.remove('userInfo');
                 Session.destroy();
             };
             $scope.recordVisit = function (visit) {
@@ -298,8 +298,8 @@ angular.module('myApp', [
     return {
         request: function (config) {
             config.headers = config.headers || {};
-            if ($cookieStore.get('storeToken')) {
-                config.headers.Authorization = 'Bearer ' + $cookieStore.get('storeToken');
+            if ($cookieStore.get('userToken')) {
+                config.headers.Authorization = 'Bearer ' + $cookieStore.get('userToken');
             }
             return config;
         },
@@ -325,24 +325,24 @@ angular.module('myApp', [
                         .post('/authenticate', credentials)
                         .then(function (res) {
                             res.data.token ?
-                                    $cookieStore.put('storeToken', res.data.token)
-                                    : $cookieStore.remove('storeToken');
+                                    $cookieStore.put('userToken', res.data.token)
+                                    : $cookieStore.remove('userToken');
                             return true;
                         }, function (res) {
                             $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
-                            $cookieStore.remove('storeToken');
+                            $cookieStore.remove('userToken');
                             return false;
                         });
             };
             authService.isAuthenticated = function () {
-                return !!Session.storeId;
+                return !!Session.userId;
             };
             authService.isAuthorized = function (authorizedRoles) {
                 if (!Array.isArray(authorizedRoles)) {
                     authorizedRoles = [authorizedRoles];
                 }
                 return (authService.isAuthenticated() &&
-                        authorizedRoles.indexOf(Session.storeRole) !== -1);
+                        authorizedRoles.indexOf(Session.userRole) !== -1);
             };
             authService.logout = function () {
 
@@ -350,24 +350,24 @@ angular.module('myApp', [
             return authService;
         })
         .service('Session', function () {
-            this.create = function (sessionId, storeId, storeRole) {
+            this.create = function (sessionId, userId, userRole) {
                 this.id = sessionId;
-                this.storeId = storeId;
-                this.storeRole = storeRole;
+                this.userId = userId;
+                this.userRole = userRole;
             };
             this.destroy = function () {
                 this.id = null;
-                this.storeId = null;
-                this.storeRole = null;
+                this.userId = null;
+                this.userRole = null;
             };
         })
         .factory('AuthResolver', function ($q, $rootScope, $location) {
             return {
                 resolve: function () {
                     var deferred = $q.defer();
-                    var unwatch = $rootScope.$watch('$$childHead.currentstore', function (currentstore) {
-                        if (angular.isDefined(currentstore) && currentstore) {
-                            deferred.resolve(currentstore);
+                    var unwatch = $rootScope.$watch('$$childHead.currentuser', function (currentuser) {
+                        if (angular.isDefined(currentuser) && currentuser) {
+                            deferred.resolve(currentuser);
                         } else {
                             deferred.reject();
                             $location.path('/login');
@@ -551,24 +551,24 @@ angular.module('myApp', [
                 }
             };
         })
-        .factory('storeService', function ($http, $rootScope) {
-            var storeList = [];
+        .factory('userservice', function ($http, $rootScope) {
+            var userList = [];
             return {
-                getStoreList: function () {
-                    return storeList;
+                getuserList: function () {
+                    return userList;
                 },
-                storeListInit: function () {
-                    $http.get('/api/stores')
+                userListInit: function () {
+                    $http.get('/api/users')
                             .success(function (response) {
-                                storeList = response;
-                                localStorage.setItem('storeList', JSON.stringify(storeList));
-                                $rootScope.$broadcast('newStoreList', {storeList: storeList});
+                                userList = response;
+                                localStorage.setItem('userList', JSON.stringify(userList));
+                                $rootScope.$broadcast('newuserList', {userList: userList});
                             })
                             .error(function () {
                             });
-                    storeList = JSON.parse(localStorage.getItem('storeList'));
+                    userList = JSON.parse(localStorage.getItem('userList'));
                 },
-                saveStore: function (storeList) {
+                saveuser: function (userList) {
 
                 }
             };
@@ -610,10 +610,10 @@ angular.module('myApp', [
                         if (!AuthService.isAuthorized(authorizedRoles)) {
                             event.preventDefault();
                             if (AuthService.isAuthenticated()) {
-                                // store is not allowed
+                                // user is not allowed
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
                             } else {
-                                // store is not logged in
+                                // user is not logged in
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
                                 $location.path('/login');
                             }
@@ -626,7 +626,7 @@ angular.module('myApp.constants', [])
             numberVisits: 6,
             winMessage: "HALF PRICE HAIR CUT",
             defaultPrice: "30",
-            storeId: '123',
+            userId: '123',
             productExpiration: '42'
         })
         .constant('AUTH_EVENTS', {
@@ -637,9 +637,9 @@ angular.module('myApp.constants', [])
             notAuthenticated: 'auth-not-authenticated',
             notAuthorized: 'auth-not-authorized'
         })
-        .constant('store_ROLES', {
+        .constant('user_ROLES', {
             all: '*',
-            store: 'store',
+            user: 'user',
             admin: 'admin'
         })
         .constant('appConfig', {
@@ -649,7 +649,7 @@ angular.module('myApp.constants', [])
             DbPath: 'hwhl_dev/collections/',
             DbUrl: 'https://api.mongolab.com/api/1/databases/',
             MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
-            MsgSvcstore: 'alexey0511',
+            MsgSvcuser: 'alexey0511',
             MsgSvcPwd: 'REHFEfEQEVBPPF',
             MsgSvcApiId: '3513880'
         });

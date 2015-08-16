@@ -1,11 +1,11 @@
 'use strict';
 angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider, user_ROLES) {
                 $routeProvider.when('/sell', {
                     templateUrl: 'pages/4.viewSell/sell.html',
                     controller: 'SellController',
-                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
+                    data: {authorizedRoles: [user_ROLES.user, user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -15,7 +15,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 });
             }])
         .controller('SellController', function ($scope, staffService, $q, $http,
-                cartService, storeService, productsService, commonFunctions, clientsService) {
+                cartService, userservice, productsService, commonFunctions, clientsService) {
             $scope.$on('barcodeInputClient', function (event, data) {
                 $scope.makeClientActive(data.client);
                 $scope.$apply();
@@ -26,8 +26,8 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
             $scope.$on('newProductList', function (event, data) {
                 $scope.products = data.products;
             });
-            $scope.$on('newStoreList', function (event, data) {
-                $scope.stores = data.storeList;
+            $scope.$on('newuserList', function (event, data) {
+                $scope.users = data.userList;
             });
             $scope.init = function () {
                 $scope.showNewClient = false;
@@ -41,10 +41,10 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 };
                 $scope.resetNameFilter();
                 $scope.resetCart();
-                $scope.stores = storeService.getStoreList();
+                $scope.users = userservice.getuserList();
                 $scope.staffList = staffService.getStaffList();
                 for (var i = 0; i < $scope.staffList.length; i++) {
-                    if ($scope.currentstore.location === 'Tinakori' && $scope.staffList[i].name === "Herman") {
+                    if ($scope.currentuser.location === 'Tinakori' && $scope.staffList[i].name === "Herman") {
                         $scope.barberActive = $scope.staffList[i];
                     }
                 }
@@ -259,7 +259,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                 $scope.cart.payment = paymentType;
                 $scope.cart.products = $scope.cartProducts;
                 $scope.cart.services = $scope.cartServices;
-                $scope.cart.location = $scope.currentstore.location;
+                $scope.cart.location = $scope.currentuser.location;
                 $scope.cart.date = new Date();
                 $scope.clientList[clientsService.findClientIndex($scope.cart.client.id, $scope.clientList)].points
                         -= $scope.cart.points;
@@ -268,7 +268,7 @@ angular.module('myApp.sell', ['ngRoute', 'myApp.constants'])
                         id: commonFunctions.generateGuid(),
                         barber: $scope.cart.services[i].barber,
                         product: {name: $scope.cart.services[i].name, price: $scope.cart.services[i].price},
-                        store: $scope.currentstore.location,
+                        user: $scope.currentuser.location,
                         date: $scope.cart.date,
                         client: {id: $scope.cart.client.id, name: $scope.cart.client.name},
                         paymentType: $scope.cart.payment

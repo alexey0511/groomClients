@@ -2,11 +2,11 @@
 
 angular.module('myApp.txting', ['ngRoute','myApp.constants'])
 
-        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
+        .config(['$routeProvider', 'user_ROLES', function ($routeProvider, user_ROLES) {
                 $routeProvider.when('/message', {
                     templateUrl: 'pages/9.txtClients/txtClients.html',
                     controller: 'TxtClientsController',
-                    data: {authorizedRoles: [store_ROLES.admin]
+                    data: {authorizedRoles: [user_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
@@ -95,7 +95,7 @@ angular.module('myApp.txting', ['ngRoute','myApp.constants'])
                 var queryMsgUrl = 'texting/smsquery';
                 msgId = msgId.substr(4);
                 var postData = {
-                    "me": appConfig.MsgSvcstore,
+                    "me": appConfig.MsgSvcuser,
                     "pwd": appConfig.MsgSvcPwd,
                     "apiId": appConfig.MsgSvcApiId,
                     "msgId": msgId
@@ -123,7 +123,7 @@ angular.module('myApp.txting', ['ngRoute','myApp.constants'])
                 var data = {
                     "text": "Test Message",
                     "to": "64212457399",
-                    "me": appConfig.MsgSvcstore,
+                    "me": appConfig.MsgSvcuser,
                     "pwd": appConfig.MsgSvcPwd,
                     "apiId": appConfig.MsgSvcApiId
                 };
