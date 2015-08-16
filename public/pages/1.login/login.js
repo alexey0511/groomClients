@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('myApp.Authentication', ['myApp.constants'])
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider) {
                 $routeProvider.when('/login', {
                     templateUrl: 'pages/1.login/login.html',
                     controller: 'LoginController'
@@ -9,11 +9,11 @@ angular.module('myApp.Authentication', ['myApp.constants'])
             }])
         .controller('LoginController', function ($scope, $http, $rootScope, AUTH_EVENTS, AuthService, $location) {
             $rootScope.$on(AUTH_EVENTS.loginFailed, function () {
-                $scope.alerts[0] = {type: 'danger', msg: "Username or password are incorrect"};
+                $scope.alerts[0] = {type: 'danger', msg: "salon or password are incorrect"};
             });
 
             $scope.credentials = {
-                username: '',
+                storename: '',
                 password: ''
             };
             $scope.login = function (credentials) {
@@ -21,10 +21,10 @@ angular.module('myApp.Authentication', ['myApp.constants'])
                     $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
                     if (response === true) {
                         $http.get('/api/me').then(function (response) {
-                            $scope.setCurrentUser(response.data);
+                            $scope.setCurrentstore(response.data);
                             $location.path('/clients');
                         }, function (error) {
-                            $scope.setCurrentUser(null);
+                            $scope.setCurrentstore(null);
                              $scope.alerts[0] = {type: 'danger', msg: "Can't load your profile"};
                         });
                     }

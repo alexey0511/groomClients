@@ -8,7 +8,7 @@ angular.module('myApp', [
     'myApp.visits',
     'myApp.newclient',
     'myApp.manageProducts',
-    'myApp.manageUsers',
+    'myApp.managestores',
     'myApp.manageClients',
     'myApp.manageStaff',
     'ngCookies',
@@ -55,7 +55,7 @@ angular.module('myApp', [
             $scope.init = function () {
                 $scope.alerts = [];
                 $scope.clientList = [];
-                $scope.currentUser = null;
+                $scope.currentstore = null;
                 $scope.closeAlert = function (index) {
                     $scope.alerts.splice(index, 1);
                 };
@@ -69,8 +69,8 @@ angular.module('myApp', [
                 } else {
                     $scope.isLoginPage = true;
                 }
-                if ($cookieStore.get('userInfo')) {
-                    $scope.setCurrentUser($cookieStore.get('userInfo'));
+                if ($cookieStore.get('storeInfo')) {
+                    $scope.setCurrentstore($cookieStore.get('storeInfo'));
                 }
                 $scope.clientList = clientsService.getClientsList();
 
@@ -112,14 +112,14 @@ angular.module('myApp', [
                 }
                 return null;
             };
-            $scope.setCurrentUser = function (user) {
-                $scope.currentUser = user;
-                $cookieStore.put('userInfo', user);
-                Session.create(1, user.user, user.role);
+            $scope.setCurrentstore = function (store) {
+                $scope.currentstore = store;
+                $cookieStore.put('storeInfo', store);
+                Session.create(1, store.store, store.role);
             };
             $scope.logout = function () {
-                delete $scope.currentUser;
-                $cookieStore.remove('userInfo');
+                delete $scope.currentstore;
+                $cookieStore.remove('storeInfo');
                 Session.destroy();
             };
             $scope.recordVisit = function (visit) {
@@ -298,8 +298,8 @@ angular.module('myApp', [
     return {
         request: function (config) {
             config.headers = config.headers || {};
-            if ($cookieStore.get('userToken')) {
-                config.headers.Authorization = 'Bearer ' + $cookieStore.get('userToken');
+            if ($cookieStore.get('storeToken')) {
+                config.headers.Authorization = 'Bearer ' + $cookieStore.get('storeToken');
             }
             return config;
         },
@@ -325,24 +325,24 @@ angular.module('myApp', [
                         .post('/authenticate', credentials)
                         .then(function (res) {
                             res.data.token ?
-                                    $cookieStore.put('userToken', res.data.token)
-                                    : $cookieStore.remove('userToken');
+                                    $cookieStore.put('storeToken', res.data.token)
+                                    : $cookieStore.remove('storeToken');
                             return true;
                         }, function (res) {
                             $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
-                            $cookieStore.remove('userToken');
+                            $cookieStore.remove('storeToken');
                             return false;
                         });
             };
             authService.isAuthenticated = function () {
-                return !!Session.userId;
+                return !!Session.storeId;
             };
             authService.isAuthorized = function (authorizedRoles) {
                 if (!Array.isArray(authorizedRoles)) {
                     authorizedRoles = [authorizedRoles];
                 }
                 return (authService.isAuthenticated() &&
-                        authorizedRoles.indexOf(Session.userRole) !== -1);
+                        authorizedRoles.indexOf(Session.storeRole) !== -1);
             };
             authService.logout = function () {
 
@@ -350,24 +350,24 @@ angular.module('myApp', [
             return authService;
         })
         .service('Session', function () {
-            this.create = function (sessionId, userId, userRole) {
+            this.create = function (sessionId, storeId, storeRole) {
                 this.id = sessionId;
-                this.userId = userId;
-                this.userRole = userRole;
+                this.storeId = storeId;
+                this.storeRole = storeRole;
             };
             this.destroy = function () {
                 this.id = null;
-                this.userId = null;
-                this.userRole = null;
+                this.storeId = null;
+                this.storeRole = null;
             };
         })
         .factory('AuthResolver', function ($q, $rootScope, $location) {
             return {
                 resolve: function () {
                     var deferred = $q.defer();
-                    var unwatch = $rootScope.$watch('$$childHead.currentUser', function (currentUser) {
-                        if (angular.isDefined(currentUser) && currentUser) {
-                            deferred.resolve(currentUser);
+                    var unwatch = $rootScope.$watch('$$childHead.currentstore', function (currentstore) {
+                        if (angular.isDefined(currentstore) && currentstore) {
+                            deferred.resolve(currentstore);
                         } else {
                             deferred.reject();
                             $location.path('/login');
@@ -558,7 +558,7 @@ angular.module('myApp', [
                     return storeList;
                 },
                 storeListInit: function () {
-                    $http.get('/api/users')
+                    $http.get('/api/stores')
                             .success(function (response) {
                                 storeList = response;
                                 localStorage.setItem('storeList', JSON.stringify(storeList));
@@ -610,10 +610,10 @@ angular.module('myApp', [
                         if (!AuthService.isAuthorized(authorizedRoles)) {
                             event.preventDefault();
                             if (AuthService.isAuthenticated()) {
-                                // user is not allowed
+                                // store is not allowed
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
                             } else {
-                                // user is not logged in
+                                // store is not logged in
                                 $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
                                 $location.path('/login');
                             }
@@ -637,9 +637,9 @@ angular.module('myApp.constants', [])
             notAuthenticated: 'auth-not-authenticated',
             notAuthorized: 'auth-not-authorized'
         })
-        .constant('USER_ROLES', {
+        .constant('store_ROLES', {
             all: '*',
-            user: 'user',
+            store: 'store',
             admin: 'admin'
         })
         .constant('appConfig', {
@@ -649,7 +649,7 @@ angular.module('myApp.constants', [])
             DbPath: 'hwhl_dev/collections/',
             DbUrl: 'https://api.mongolab.com/api/1/databases/',
             MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
-            MsgSvcUser: 'alexey0511',
+            MsgSvcstore: 'alexey0511',
             MsgSvcPwd: 'REHFEfEQEVBPPF',
             MsgSvcApiId: '3513880'
         });

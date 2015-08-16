@@ -33,7 +33,7 @@ var dbService = (function (appConfig) {
     }
     function login(query, success) {
         var method = "GET";
-        var endpoint = appConfig.DbPath + "users";
+        var endpoint = appConfig.DbPath + "stores";
         var a = JSON.stringify(query);
         var data = {'q': a, 'apiKey': appConfig.DbId};
         sendRequest(endpoint, method, data, success);

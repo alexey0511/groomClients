@@ -2,11 +2,11 @@
 
 angular.module('myApp.newclient', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/newclient', {
                     templateUrl: 'pages/3.viewNewClient/newclient.html',
                     controller: 'NewClientController',
-                    data: {authorizedRoles: [USER_ROLES.user, USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.store, store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {

@@ -2,11 +2,11 @@
 
 angular.module('myApp.manageProducts', ['ngRoute', 'myApp.constants'])
 
-        .config(['$routeProvider', 'USER_ROLES', function ($routeProvider, USER_ROLES) {
+        .config(['$routeProvider', 'store_ROLES', function ($routeProvider, store_ROLES) {
                 $routeProvider.when('/manageproducts', {
                     templateUrl: 'pages/_10.manageProducts/manageProducts.html',
                     controller: 'ManageProductsController',
-                    data: {authorizedRoles: [USER_ROLES.admin]
+                    data: {authorizedRoles: [store_ROLES.admin]
                     },
                     resolve: {
                         auth: function resolveAuthentication(AuthResolver) {
