@@ -643,14 +643,14 @@ angular.module('myApp.constants', [])
             admin: 'admin'
         })
         .constant('appConfig', {
-            //            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            //            DbId: '',
             //            DbPath: 'hwhl/collections/',
-            DbId: 'FZppyrqd2WJkyAr7bLk0LVGbpD6Mug0L',
+            DbId: '',
             DbPath: 'hwhl_dev/collections/',
             DbUrl: 'https://api.mongolab.com/api/1/databases/',
             MsgSvcWebsite: 'http://api.clickatell.com/http/sendmsg',
             MsgSvcuser: 'alexey0511',
-            MsgSvcPwd: 'REHFEfEQEVBPPF',
+            MsgSvcPwd: '',
             MsgSvcApiId: '3513880'
         });
 
